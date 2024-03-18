@@ -13,7 +13,6 @@ interface CustomSessionData extends SessionData {
 }
 
 
-
 //Controller for User Registration
 
 export const registerUser = asyncHandler(async (req: Request, res: Response) => {
@@ -79,10 +78,6 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
 
   res.status(200).json({ message: "OTP verified, user created",user});
 });
-
-
-
-
 
 
 // User Login
