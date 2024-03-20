@@ -1,5 +1,5 @@
 import express, { Express } from "express";
-import session from 'express-session';
+import session, { SessionOptions,MemoryStore,SessionData } from "express-session";
 import dotenv from "dotenv";
 import connectDB from "./config/db";
 import userRoutes from "./routes/userRoutes";
@@ -10,8 +10,18 @@ dotenv.config();
 
 const app: Express = express();
 
+declare module 'express-session' {
+  interface Session {
+    userDetails?: { userName: string, email: string, password: string };
+    otp?: string;
+    otpGeneratedTime?:number;
+  }
+}
+
 app.use(cors({
-  origin:'http://localhost:5173'
+  origin:'http://localhost:5173',
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
 }))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -21,7 +31,7 @@ const sessionSecret = process.env.SESSION_SECRET || 'default_secret_key';
 app.use(session({
   secret:sessionSecret, 
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   cookie: {
     maxAge: 24 * 60 * 60 * 1000,
   },

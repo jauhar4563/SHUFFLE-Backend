@@ -30,18 +30,18 @@ export const registerUser = asyncHandler(
       secret: speakeasy.generateSecret({ length: 20 }).base32,
       digits: 4, 
     });
-    const sessionData: CustomSessionData = req.session!;
+    const sessionData = req.session!;
     sessionData.userDetails = { userName, email, password };
     sessionData.otp = otp;
     sessionData.otpGeneratedTime = Date.now();
-
+    console.log(sessionData.otp)
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     sessionData.userDetails!.password = hashedPassword;
     sendVerifyMail(req, userName, email);
 
-    res.status(200).json({ message: "OTP sent for verification", otp:otp });
+    res.status(200).json({ message: "OTP sent for verification" });
   }
 );
 
@@ -49,14 +49,15 @@ export const registerUser = asyncHandler(
 
 export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
   const { otp } = req.body;
-  if (!otp) {
+  if (!otp) { 
     res.status(400);
     throw new Error("Please provide OTP");
   }
-
-  const sessionData: CustomSessionData = req.session!;
+  console.log(req.session)
+  const sessionData = req.session!;
+  
   const storedOTP = sessionData.otp;
-
+  console.log(storedOTP)
   if (!storedOTP || otp !== storedOTP) {
     res.status(400);
     throw new Error("Invalid OTP");
