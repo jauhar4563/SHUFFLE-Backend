@@ -4,7 +4,6 @@ import speakeasy from "speakeasy";
 import bcrypt from "bcryptjs";
 import User from "../models/user/userModel";
 import generateToken from "../utils/generateToken";
-import CustomSessionData from "../utils/session";
 import sendVerifyMail from "../utils/sendVerifyMail";
 
 //Controller for User Registration
@@ -41,7 +40,7 @@ export const registerUser = asyncHandler(
     sessionData.userDetails!.password = hashedPassword;
     sendVerifyMail(req, userName, email);
 
-    res.status(200).json({ message: "OTP sent for verification" });
+    res.status(200).json({ message: "OTP sent for verification",email});
   }
 );
 
@@ -62,6 +61,13 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
     res.status(400);
     throw new Error("Invalid OTP");
   }
+  const otpGeneratedTime = sessionData.otpGeneratedTime || 0;
+  const currentTime = Date.now();
+  const otpExpirationTime = 30 * 1000; 
+  if (currentTime - otpGeneratedTime > otpExpirationTime) {
+    res.status(400);
+    throw new Error("OTP has expired");
+  }
 
   const userDetails = sessionData.userDetails;
   if (!userDetails) {
@@ -79,6 +85,32 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
 
   res.status(200).json({ message: "OTP verified, user created", user });
 });
+
+
+// OTP Resend
+
+export const resendOtp = asyncHandler(async (req: Request, res: Response) => {
+  const {email} = req.body;
+  console.log(email)
+  const otp = speakeasy.totp({
+    secret: speakeasy.generateSecret({ length: 20 }).base32,
+    digits: 4, 
+  });
+
+  const sessionData = req.session!;
+  sessionData.otp = otp;
+  sessionData.otpGeneratedTime = Date.now();
+
+  const userDetails = sessionData.userDetails;
+  if (!userDetails) {
+    res.status(400).json({ message: "User details not found in session" });
+    return;
+  }
+  console.log(otp)
+  sendVerifyMail(req, userDetails.userName, userDetails.email);
+  res.status(200).json({ message: "OTP sent for verification" ,email});
+});
+
 
 // User Login
 

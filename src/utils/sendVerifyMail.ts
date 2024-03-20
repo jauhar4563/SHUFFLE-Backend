@@ -1,11 +1,9 @@
 import nodemailer from "nodemailer";
 import { Request } from "express";
-import CustomSessionData from "./session";
-import { SessionData } from "express-session";
 
 const sendVerifyMail = async (req: Request, name: string, email: string) => {
   try {
-    const sessionData: CustomSessionData = req.session!;
+    const sessionData = req.session!;
     const otp = sessionData!.otp; // Assuming req.session is properly initialized
     console.log(otp);
     sessionData!.otpGeneratedTime = Date.now();
