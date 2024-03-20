@@ -1,4 +1,4 @@
-import { Document,ObjectId } from "mongoose";
+import { Document,Types } from "mongoose";
 
 export enum Gender {
     Male = 'male',
@@ -14,7 +14,7 @@ interface UserInterface extends Document {
     gender?: Gender;
     profileImg?: string;
     bio?: string;
-    savedPost: ObjectId[];
+    savedPost: Types.ObjectId[];
     isOnline: boolean;
     isBlocked: boolean;
     DND: boolean;

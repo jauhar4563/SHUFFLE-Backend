@@ -1,4 +1,4 @@
-import mongoose, { Document,ObjectId,Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import user from './userTypes'
 import { Gender } from './userTypes';
 

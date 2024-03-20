@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
-import User from "../models/user/userModel";
+import speakeasy from "speakeasy";
 import bcrypt from "bcryptjs";
+import User from "../models/user/userModel";
 import generateToken from "../utils/generateToken";
-import OTPGenerator from "otp-generator";
 import CustomSessionData from "../utils/session";
 import sendVerifyMail from "../utils/sendVerifyMail";
 
@@ -11,7 +11,10 @@ import sendVerifyMail from "../utils/sendVerifyMail";
 
 export const registerUser = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userName, email, password } = req.body;
+    
+    const { username:userName, email, password } = req.body;
+    console.log(userName,email,password);
+    
     if (!userName || !email || !password) {
       throw new Error("Please add fields");
     }
@@ -23,8 +26,10 @@ export const registerUser = asyncHandler(
       res.status(400);
       throw new Error("User already exists");
     }
-
-    const otp = OTPGenerator.generate(6);
+    const otp = speakeasy.totp({
+      secret: speakeasy.generateSecret({ length: 20 }).base32,
+      digits: 4, 
+    });
     const sessionData: CustomSessionData = req.session!;
     sessionData.userDetails = { userName, email, password };
     sessionData.otp = otp;
@@ -36,7 +41,7 @@ export const registerUser = asyncHandler(
     sessionData.userDetails!.password = hashedPassword;
     sendVerifyMail(req, userName, email);
 
-    res.status(200).json({ message: "OTP sent for verification", otp });
+    res.status(200).json({ message: "OTP sent for verification", otp:otp });
   }
 );
 

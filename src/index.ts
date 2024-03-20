@@ -4,10 +4,15 @@ import dotenv from "dotenv";
 import connectDB from "./config/db";
 import userRoutes from "./routes/userRoutes";
 import adminRoutes from "./routes/adminRoutes";
+import cors from 'cors';
+
 dotenv.config();
 
 const app: Express = express();
 
+app.use(cors({
+  origin:'http://localhost:5173'
+}))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -25,8 +30,8 @@ app.use(session({
 connectDB();
 const port = process.env.PORT || 3000;
 
-app.use("/", userRoutes);
-app.use("/admin", adminRoutes);
+app.use("/api/", userRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
