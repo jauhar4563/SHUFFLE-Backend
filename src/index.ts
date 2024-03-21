@@ -5,6 +5,7 @@ import connectDB from "./config/db";
 import userRoutes from "./routes/userRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import cors from 'cors';
+import errorHandler from "./middlewares/errorMiddleware";
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ declare module 'express-session' {
     userDetails?: { userName: string, email: string, password: string };
     otp?: string;
     otpGeneratedTime?:number;
+    email:string
   }
 }
 
@@ -42,6 +44,7 @@ const port = process.env.PORT || 3000;
 
 app.use("/api/", userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);

@@ -4,19 +4,22 @@ import { Request } from "express";
 const sendVerifyMail = async (req: Request, name: string, email: string) => {
   try {
     const sessionData = req.session!;
-    const otp = sessionData!.otp; // Assuming req.session is properly initialized
-    console.log(otp);
+    const otp = sessionData!.otp; 
+    console.log(otp+"node mailer"+email);
     sessionData!.otpGeneratedTime = Date.now();
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 587,
       secure: false,
       requireTLS: true,
+      tls: {
+        rejectUnauthorized: false,
+      },
       auth: {
         user: "neganishere73@gmail.com",
         pass: "rrhm xbbp yrnh cras",
       },
-    });
+    })
 
     const mailOptions: nodemailer.SendMailOptions = {
       from: "neganishere73@gmail.com",
@@ -90,6 +93,7 @@ const sendVerifyMail = async (req: Request, name: string, email: string) => {
 
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
+        console.log("Send mail")
         console.log(error);
       } else {
         console.log("Email has been sent:", info.response);

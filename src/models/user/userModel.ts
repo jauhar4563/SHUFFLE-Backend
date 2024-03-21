@@ -50,6 +50,14 @@ const userSchema: Schema = new Schema<user>({
     isPrivate: {
         type: Boolean,
         default: false
+    },
+    isGoogle:{
+        type:Boolean,
+        default: false
+    },
+    isFacebook:{
+        type:Boolean,
+        default: false
     }
 }, { timestamps: true });
 
