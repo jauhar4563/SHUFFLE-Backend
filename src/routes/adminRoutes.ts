@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from 'express'
+import express from 'express'
 import { Login,getUsers,userBlock } from '../controllers/adminController';
 const router = express.Router()
 

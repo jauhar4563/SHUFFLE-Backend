@@ -30,7 +30,16 @@ const PostSchema = new Schema<PostInterface>({
     isBlocked: {
         type: Boolean,
         default: false
+    },
+    hideComment:{
+        type:Boolean,
+        default:false
+    },
+    hideLikes:{
+        type:Boolean,
+        default:false
     }
+    
 });
 
 const Post = model<PostInterface>('Post', PostSchema);

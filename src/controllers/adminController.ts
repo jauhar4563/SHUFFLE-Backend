@@ -2,18 +2,19 @@ import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import Admin from "../models/admin/adminModel";
 import generateToken from "../utils/generateToken";
-import bcrypt from "bcryptjs";
 import User from "../models/user/userModel";
 
 
-// ADMIN LOGIN
+// @desc    Admin Login
+// @route   ADMIN /Admin/login
+// @access  Public
 
 export const Login = asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const admin = await Admin.findOne({ email });
     
     if (admin && password=== admin.password) {
-        res.json({
+        res.json({message:"Authorisation Successful.",
             _id: admin.id,
             name: admin.name,
             email: admin.email,
@@ -27,7 +28,9 @@ export const Login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 
-// GET USERS
+// @desc    Get all users
+// @route   ADMIN /admin/get-users
+// @access  Public
 
 export const getUsers = asyncHandler(async (req: Request, res: Response) => {
     const users = await User.find({});
@@ -40,7 +43,9 @@ export const getUsers = asyncHandler(async (req: Request, res: Response) => {
     }
   });
 
-//   BLOCK USERS
+// @desc    Block Users
+// @route   ADMIN /admin/block-user
+// @access  Public
 
   export const userBlock = asyncHandler(async (req: Request, res: Response) => {
     const userId: string = req.body.userId; // Assuming userId is of type string

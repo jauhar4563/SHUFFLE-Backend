@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db";
 import userRoutes from "./routes/userRoutes";
 import adminRoutes from "./routes/adminRoutes";
+import postRoutes from './routes/postRoutes';
 import cors from 'cors';
 import errorHandler from "./middlewares/errorMiddleware";
 
@@ -44,6 +45,8 @@ const port = process.env.PORT || 3000;
 
 app.use("/api/", userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/post", postRoutes);
+
 app.use(errorHandler);
 
 app.listen(port, () => {

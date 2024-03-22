@@ -6,14 +6,15 @@ import User from "../models/user/userModel";
 import generateToken from "../utils/generateToken";
 import sendVerifyMail from "../utils/sendVerifyMail";
 
-//Controller for User Registration
+// @desc    Register new User
+// @route   USER /register
+// @access  Public
 
 export const registerUser = asyncHandler(
   async (req: Request, res: Response) => {
-    
-    const { username:userName, email, password } = req.body;
-    console.log(userName,email,password);
-    
+    const { username: userName, email, password } = req.body;
+    console.log(userName, email, password);
+
     if (!userName || !email || !password) {
       throw new Error("Please add fields");
     }
@@ -27,43 +28,45 @@ export const registerUser = asyncHandler(
     }
     const otp = speakeasy.totp({
       secret: speakeasy.generateSecret({ length: 20 }).base32,
-      digits: 4, 
+      digits: 4,
     });
     const sessionData = req.session!;
     sessionData.userDetails = { userName, email, password };
     sessionData.otp = otp;
     sessionData.otpGeneratedTime = Date.now();
-    console.log(sessionData.otp)
+    console.log(sessionData.otp);
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     sessionData.userDetails!.password = hashedPassword;
     sendVerifyMail(req, userName, email);
 
-    res.status(200).json({ message: "OTP sent for verification",email});
+    res.status(200).json({ message: "OTP sent for verification", email });
   }
 );
 
-// OTP VERIFICATION
+// @desc    Register OTP Verification
+// @route   USER /register-otp
+// @access  Public
 
 export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
   const { otp } = req.body;
-  if (!otp) { 
+  if (!otp) {
     res.status(400);
     throw new Error("Please provide OTP");
   }
-  console.log(req.session)
+  console.log(req.session);
   const sessionData = req.session!;
-  
+
   const storedOTP = sessionData.otp;
-  console.log(storedOTP)
+  console.log(storedOTP);
   if (!storedOTP || otp !== storedOTP) {
     res.status(400);
     throw new Error("Invalid OTP");
   }
   const otpGeneratedTime = sessionData.otpGeneratedTime || 0;
   const currentTime = Date.now();
-  const otpExpirationTime = 30 * 1000; 
+  const otpExpirationTime = 30 * 1000;
   if (currentTime - otpGeneratedTime > otpExpirationTime) {
     res.status(400);
     throw new Error("OTP has expired");
@@ -82,21 +85,21 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
 
   delete sessionData.userDetails;
   delete sessionData.otp;
-  delete sessionData.otpGeneratedTime
-
+  delete sessionData.otpGeneratedTime;
 
   res.status(200).json({ message: "OTP verified, user created", user });
 });
 
-
-// OTP Resend
+// @desc    Resend OTP
+// @route   USER /resend-otp
+// @access  Public
 
 export const resendOtp = asyncHandler(async (req: Request, res: Response) => {
-  const {email} = req.body;
-  console.log(email)
+  const { email } = req.body;
+  console.log(email);
   const otp = speakeasy.totp({
     secret: speakeasy.generateSecret({ length: 20 }).base32,
-    digits: 4, 
+    digits: 4,
   });
 
   const sessionData = req.session!;
@@ -108,13 +111,14 @@ export const resendOtp = asyncHandler(async (req: Request, res: Response) => {
     res.status(400).json({ message: "User details not found in session" });
     return;
   }
-  console.log(otp)
+  console.log(otp);
   sendVerifyMail(req, userDetails.userName, userDetails.email);
-  res.status(200).json({ message: "OTP sent for verification" ,email});
+  res.status(200).json({ message: "OTP sent for verification", email });
 });
 
-
-// User Login
+// @desc    User Login
+// @route   USER /login
+// @access  Public
 
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -129,7 +133,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
   if (user && (await bcrypt.compare(password, user.password))) {
     res.json({
-      message:"Login Successful",
+      message: "Login Successful",
       _id: user.id,
       name: user.userName,
       email: user.email,
@@ -142,9 +146,9 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
-
-
-// Google authentication Sign-In and Sign-Up
+// @desc    Google Authentication
+// @route   USER /google-auth
+// @access  Public
 
 export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
   const { username, email, imageUrl } = req.body;
@@ -171,14 +175,14 @@ export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
       }
     }
 
-    const randomPassword = Math.random().toString(36).slice(-8); 
+    const randomPassword = Math.random().toString(36).slice(-8);
 
     const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
     const newUser = await User.create({
-      userName:username,
+      userName: username,
       email,
-      password: hashedPassword, 
+      password: hashedPassword,
       profileImg: imageUrl,
       isGoogle: true,
     });
@@ -199,94 +203,103 @@ export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
+// @desc    Forgot Password
+// @route   USER /forgot-password
+// @access  Public
 
-// Forgot Password
+export const forgotPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
 
-export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
+    if (user) {
+      const otp = speakeasy.totp({
+        secret: speakeasy.generateSecret({ length: 20 }).base32,
+        digits: 4,
+      });
 
-  if (user) {
-    const otp = speakeasy.totp({
-      secret: speakeasy.generateSecret({ length: 20 }).base32,
-      digits: 4, 
-    });
-
-    const sessionData = req.session!;
-    sessionData.otp = otp;    
-    sessionData.otpGeneratedTime = Date.now()
-    sessionData.email = email;
-    sendVerifyMail(req, user.userName, user.email);
-    console.log(otp)
-    res.status(200).json({message:`OTP has been send to your email`,email})
+      const sessionData = req.session!;
+      sessionData.otp = otp;
+      sessionData.otpGeneratedTime = Date.now();
+      sessionData.email = email;
+      sendVerifyMail(req, user.userName, user.email);
+      console.log(otp);
+      res
+        .status(200)
+        .json({ message: `OTP has been send to your email`, email });
+    } else {
+      res.status(400);
+      throw new Error("Not User Found");
+    }
   }
-   else {
-    res.status(400);
-    throw new Error("Not User Found");
-  }
-});
+);
 
-
-// Forgot Passwor OTP verification
+// @desc    Forgot Password OTP verification
+// @route   USER /forgot-otp
+// @access  Public
 
 export const forgotOtp = asyncHandler(async (req: Request, res: Response) => {
   const { otp } = req.body;
-  if (!otp) { 
+  if (!otp) {
     res.status(400);
     throw new Error("Please provide OTP");
   }
   const sessionData = req.session!;
-  
+
   const storedOTP = sessionData.otp;
-  console.log(storedOTP)
+  console.log(storedOTP);
   if (!storedOTP || otp !== storedOTP) {
     res.status(400);
     throw new Error("Invalid OTP");
   }
   const otpGeneratedTime = sessionData.otpGeneratedTime || 0;
   const currentTime = Date.now();
-  const otpExpirationTime = 30 * 1000; 
+  const otpExpirationTime = 30 * 1000;
   if (currentTime - otpGeneratedTime > otpExpirationTime) {
     res.status(400);
     throw new Error("OTP has expired");
   }
 
-  
-
   delete sessionData.otp;
-  delete sessionData.otpGeneratedTime
+  delete sessionData.otpGeneratedTime;
 
-  res.status(200).json({ message: "OTP has been verified. Please reset password" ,email:sessionData?.email});
+  res
+    .status(200)
+    .json({
+      message: "OTP has been verified. Please reset password",
+      email: sessionData?.email,
+    });
 });
 
+// @desc    Reset-Password
+// @route   USER /reset-passwordt
+// @access  Public
 
+export const resetPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { password, confirmPassword } = req.body;
+    const sessionData = req.session;
 
-// Reset Password
+    if (!sessionData || !sessionData.email) {
+      res.status(400);
+      throw new Error("No session data found");
+    }
 
+    if (password !== confirmPassword) {
+      res.status(400);
+      throw new Error("Password do not match");
+    }
 
-export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
-  const { password, confirmPassword } = req.body;
-  const sessionData = req.session;
+    const user = await User.findOne({ email: sessionData.email });
+    if (!user) {
+      res.status(400);
+      throw new Error("User Not Found");
+    }
 
-  if (!sessionData || !sessionData.email) {
-    res.status(400);
-    throw new Error('No session data found');
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    user.password = hashedPassword;
+    await user.save();
+    res.status(200).json({ message: "Password has been reset successfully" });
   }
-
-  if (password !== confirmPassword) {
-    res.status(400);
-    throw new Error('Password do not match');
-  }
-
-  const user = await User.findOne({ email: sessionData.email });
-  if (!user) {
-    res.status(400);
-    throw new Error('User Not Found');
-  }
-
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-  user.password = hashedPassword;
-  await user.save();
-  res.status(200).json({ message: 'Password has been reset successfully' });
-});
+);

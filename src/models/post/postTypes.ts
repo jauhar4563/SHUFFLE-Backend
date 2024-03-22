@@ -8,6 +8,8 @@ interface PostInterface extends Document {
     likes: Types.ObjectId[];
     isHidden: boolean;
     isBlocked: boolean;
+    hideComment: boolean;
+    hideLikes:boolean;
 }
 
 export default PostInterface;
