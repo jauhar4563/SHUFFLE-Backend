@@ -7,7 +7,9 @@ import asyncHandler from "express-async-handler";
 // @access  Public
 
 export const addPost = asyncHandler(async (req: Request, res: Response) => {
-  const { userId, imageUrl, description, hideComment, hideLikes } = req.body;
+  const { userId, imageUrl,title, description  } = req.body;
+  const hideLikes = false;
+  const hideComment = false;
     console.log(userId,imageUrl, description,hideLikes,hideComment)
   if (!userId || !imageUrl || !description) {
     res.status(400);
@@ -16,6 +18,7 @@ export const addPost = asyncHandler(async (req: Request, res: Response) => {
   const post = await Post.create({
     userId,
     imageUrl,
+    title,
     description,
     hideComment,
     hideLikes,
@@ -75,7 +78,7 @@ export const deletePost = asyncHandler(async (req: Request, res: Response) => {
         throw new Error("Post Cannot be found")
       }
   
-      await Post.findOneAndDelete(postId);
+    //   await Post.findOneAndDelete(postId);
   
       res.status(200).json({ message: "Post deleted successfully" });
     

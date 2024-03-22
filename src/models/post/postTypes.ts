@@ -3,6 +3,7 @@ import { Document, Schema, Types } from "mongoose";
 interface PostInterface extends Document {
     userId: Types.ObjectId;
     imageUrl: string;
+    title: string;
     description: string;
     date: Date;
     likes: Types.ObjectId[];
