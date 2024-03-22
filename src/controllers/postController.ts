@@ -7,9 +7,7 @@ import asyncHandler from "express-async-handler";
 // @access  Public
 
 export const addPost = asyncHandler(async (req: Request, res: Response) => {
-  const { userId, imageUrl,title, description  } = req.body;
-  const hideLikes = false;
-  const hideComment = false;
+  const { userId, imageUrl,title, description ,hideLikes,hideComment } = req.body;
     console.log(userId,imageUrl, description,hideLikes,hideComment)
   if (!userId || !imageUrl || !description) {
     res.status(400);
