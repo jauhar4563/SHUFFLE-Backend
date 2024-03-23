@@ -34,7 +34,10 @@ export const addPost = asyncHandler(async (req: Request, res: Response) => {
 // @access  Public
 
 export const getPost = asyncHandler(async (req: Request, res: Response) => {
-  const posts = await Post.find({ isBlocked: false });
+  const posts = await Post.find({ isBlocked: false }).populate({
+    path: 'userId',
+    select: 'userName profileImg'
+  });
   res.status(200).json(posts);
 });
 
