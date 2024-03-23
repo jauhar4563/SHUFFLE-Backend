@@ -41,6 +41,22 @@ export const getPost = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json(posts);
 });
 
+
+
+// @desc    Get User Posts
+// @route   get /post/get-post
+// @access  Public
+
+export const getUserPost = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.body.userId;
+  console.log(id+"hello")
+  const posts = await Post.find({userId:id, isBlocked: false }).populate({
+    path: 'userId',
+    select: 'userName profileImg'
+  });
+  res.status(200).json(posts);
+});
+
 // @desc    Update Post
 // @route   POST /post/update-post
 // @access  Public
