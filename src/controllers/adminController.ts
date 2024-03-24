@@ -65,8 +65,9 @@ export const getPost = asyncHandler(async (req: Request, res: Response) => {
 // @access  Public
 
   export const userBlock = asyncHandler(async (req: Request, res: Response) => {
-    const userId: string = req.body.userId; // Assuming userId is of type string
-    const user = await User.findById(userId);
+    const userId = req.body.userId; 
+    console.log(req.body)
+    const user = await User.findById(userId)
   
     if (!user) {
       res.status(400);
@@ -77,5 +78,6 @@ export const getPost = asyncHandler(async (req: Request, res: Response) => {
     await user.save();
   
     const users = await User.find({});
-    res.status(200).json({ users });
+    const blocked = user.isBlocked?"Blocked":"Unblocked"
+    res.status(200).json({ users,message: `You have ${blocked} ${user.userName}`});
   });
