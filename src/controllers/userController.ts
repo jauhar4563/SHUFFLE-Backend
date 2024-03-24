@@ -108,7 +108,8 @@ export const resendOtp = asyncHandler(async (req: Request, res: Response) => {
 
   const userDetails = sessionData.userDetails;
   if (!userDetails) {
-    res.status(400).json({ message: "User details not found in session" });
+    res.status(400);
+    throw new Error("User details not found in session");
     return;
   }
   console.log(otp);
@@ -158,8 +159,8 @@ export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
 
     if (userExist) {
       if (userExist.isBlocked) {
-        res.status(400).json({ message: "User is blocked" });
-        return;
+        res.status(400);
+        throw new Error( "User is blocked" );
       }
 
       if (userExist.isGoogle) {
@@ -172,6 +173,10 @@ export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
           token: generateToken(userExist.id),
         });
         return;
+      }
+      else{
+        res.status(400);
+        throw new Error("User already Exist with that email. Try a differeny email")
       }
     }
 
@@ -212,6 +217,10 @@ export const forgotPassword = asyncHandler(
     const { email } = req.body;
     const user = await User.findOne({ email });
 
+    if(!user){
+      res.status(400);
+      throw new Error("User not found");
+    }
     if (user) {
       const otp = speakeasy.totp({
         secret: speakeasy.generateSecret({ length: 20 }).base32,

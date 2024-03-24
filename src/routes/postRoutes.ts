@@ -5,6 +5,6 @@ const router = express.Router()
 router.post('/add-post',addPost);
 router.get('/get-post',getPost);
 router.post('/get-user-post',getUserPost);
-router.post('/update-post',updatePost);
+router.post('/edit-post',updatePost);
 
 export default router;
