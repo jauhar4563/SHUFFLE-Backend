@@ -4,6 +4,7 @@ import Admin from "../models/admin/adminModel";
 import generateToken from "../utils/generateToken";
 import User from "../models/user/userModel";
 import Post from "../models/post/postModel";
+import Hashtag from "../models/hashtag/hashtagModel";
 
 
 // @desc    Admin Login
@@ -81,3 +82,46 @@ export const getPost = asyncHandler(async (req: Request, res: Response) => {
     const blocked = user.isBlocked?"Blocked":"Unblocked"
     res.status(200).json({ users,message: `You have ${blocked} ${user.userName}`});
   });
+
+
+
+      // @desc    Get all hashtags
+// @route   ADMIN /admin/get-users
+// @access  Public
+
+export const addHashtags = asyncHandler(async (req: Request, res: Response) => {
+  const {hashtag} = req.body;
+
+  const hashtags = await Hashtag.find({hashtag:hashtag});
+
+  if (hashtags) {
+    res.status(404);
+    throw new Error("Hashtag Already Exist");
+  } else {
+    const newHashtag = Hashtag.create({
+      hashtag
+    })
+
+    res.status(200).json({message:"Hashtag added"})
+  }
+});
+
+
+
+
+
+    // @desc    Get all hashtags
+// @route   ADMIN /admin/get-users
+// @access  Public
+
+export const getHashtags = asyncHandler(async (req: Request, res: Response) => {
+  const hashtags = await Hashtag.find({});
+
+  if (hashtags) {
+    res.status(200).json({ hashtags });
+  } else {
+    res.status(404);
+    throw new Error(" No Hashtags Found");
+  }
+});
+

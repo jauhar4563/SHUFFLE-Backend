@@ -11,6 +11,7 @@ interface PostInterface extends Document {
     isBlocked: boolean;
     hideComment: boolean;
     hideLikes:boolean;
+    isDeleted:boolean
 }
 
 export default PostInterface;

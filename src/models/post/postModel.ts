@@ -42,6 +42,10 @@ const PostSchema = new Schema<PostInterface>({
     hideLikes:{
         type:Boolean,
         default:false
+    },
+    isDeleted:{
+        type:Boolean,
+        default:false
     }
     
 });

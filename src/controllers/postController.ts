@@ -34,7 +34,7 @@ export const addPost = asyncHandler(async (req: Request, res: Response) => {
 // @access  Public
 
 export const getPost = asyncHandler(async (req: Request, res: Response) => {
-  const posts = await Post.find({ isBlocked: false }).populate({
+  const posts = await Post.find({ isBlocked: false ,isDeleted:false}).populate({
     path: 'userId',
     select: 'userName profileImg'
   }).sort({date:-1});
@@ -50,7 +50,7 @@ export const getPost = asyncHandler(async (req: Request, res: Response) => {
 export const getUserPost = asyncHandler(async (req: Request, res: Response) => {
   const id = req.body.userId;
   console.log(id+"hello")
-  const posts = await Post.find({userId:id, isBlocked: false }).populate({
+  const posts = await Post.find({userId:id, isBlocked: false,isDeleted:false }).populate({
     path: 'userId',
     select: 'userName profileImg'
   }).sort({date:-1});
@@ -63,7 +63,7 @@ export const getUserPost = asyncHandler(async (req: Request, res: Response) => {
 
 export const updatePost = asyncHandler(async (req: Request, res: Response) => {
   const postId = req.body.postId;
-  const {title, description, hideComment, hideLikes } = req.body;
+  const {userId, title, description, hideComment, hideLikes } = req.body;
   const post = await Post.findById(postId);
 
   if (!post) {
@@ -77,26 +77,37 @@ export const updatePost = asyncHandler(async (req: Request, res: Response) => {
   if (hideLikes !== undefined) post.hideLikes = hideLikes;
 
   await post.save();
-
-  res.status(200).json({ message: "Post Updated Successfully" });
+  const posts = await Post.find({userId:userId, isBlocked: false ,isDeleted:false}).populate({
+    path: 'userId',
+    select: 'userName profileImg'
+  }).sort({date:-1});
+  res.status(200).json({posts});
 });
 
 
 
+// @desc    Delete Post
+// @route   POST /post/delete-post
+// @access  Public
 
 export const deletePost = asyncHandler(async (req: Request, res: Response) => {
     
-    const postId = req.params.postId;
-  
+    const {postId,userId} = req.body;
+    console.log(postId,userId)
       const post = await Post.findById(postId);
       if (!post) {
         res.status(404);
         throw new Error("Post Cannot be found")
       }
   
-    //   await Post.findOneAndDelete(postId);
+      post.isDeleted = true;
+      await post.save();
+      const posts = await Post.find({userId:userId, isBlocked: false,isDeleted:false }).populate({
+        path: 'userId',
+        select: 'userName profileImg'
+      }).sort({date:-1});
   
-      res.status(200).json({ message: "Post deleted successfully" });
+      res.status(200).json({ posts });
     
   });
   
