@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/user/userModel";
 import generateToken from "../utils/generateToken";
 import sendVerifyMail from "../utils/sendVerifyMail";
+import Hashtag from "../models/hashtag/hashtagModel";
 
 // @desc    Register new User
 // @route   USER /register
@@ -66,7 +67,7 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
   }
   const otpGeneratedTime = sessionData.otpGeneratedTime || 0;
   const currentTime = Date.now();
-  const otpExpirationTime = 30 * 1000;
+  const otpExpirationTime = 60 * 1000;
   if (currentTime - otpGeneratedTime > otpExpirationTime) {
     res.status(400);
     throw new Error("OTP has expired");
@@ -263,7 +264,7 @@ export const forgotOtp = asyncHandler(async (req: Request, res: Response) => {
   }
   const otpGeneratedTime = sessionData.otpGeneratedTime || 0;
   const currentTime = Date.now();
-  const otpExpirationTime = 30 * 1000;
+  const otpExpirationTime = 60 * 1000;
   if (currentTime - otpGeneratedTime > otpExpirationTime) {
     res.status(400);
     throw new Error("OTP has expired");
@@ -312,3 +313,19 @@ export const resetPassword = asyncHandler(
     res.status(200).json({ message: "Password has been reset successfully" });
   }
 );
+
+
+    // @desc    Get all hashtags
+// @route   User /get-hashtags
+// @access  Public
+
+export const getHashtags = asyncHandler(async (req: Request, res: Response) => {
+  const hashtags = await Hashtag.find({isBlocked:false}).sort({date:-1});;
+  console.log("got request")
+  if (hashtags) {
+    res.status(200).json({ hashtags });
+  } else {
+    res.status(404);
+    throw new Error(" No Hashtags Found");
+  }
+});

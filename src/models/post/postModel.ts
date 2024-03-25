@@ -1,5 +1,6 @@
 import {Schema, model } from "mongoose";
 import PostInterface from "./postTypes";
+import { string } from "yup";
 
 const PostSchema = new Schema<PostInterface>({
     userId: {
@@ -22,6 +23,10 @@ const PostSchema = new Schema<PostInterface>({
     date: {
         type: Date,
         default: Date.now
+    },
+    hashtags: {
+        type:  [String],
+        default: []
     },
     likes: {
         type: [{ type: Schema.Types.ObjectId, ref: 'User' }],

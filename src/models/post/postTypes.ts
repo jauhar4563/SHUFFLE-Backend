@@ -6,6 +6,7 @@ interface PostInterface extends Document {
     title: string;
     description: string;
     date: Date;
+    hashtags:string[];
     likes: Types.ObjectId[];
     isHidden: boolean;
     isBlocked: boolean;

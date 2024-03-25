@@ -7,8 +7,9 @@ import asyncHandler from "express-async-handler";
 // @access  Public
 
 export const addPost = asyncHandler(async (req: Request, res: Response) => {
-  const { userId, imageUrl,title, description ,hideLikes,hideComment } = req.body;
-    console.log(userId,imageUrl, description,hideLikes,hideComment)
+  const { userId, imageUrl,title, description ,hideLikes,hideComment,hashtag } = req.body;
+    console.log(userId,imageUrl, description,hideLikes,hideComment,hashtag);
+    
   if (!userId || !imageUrl || !description) {
     res.status(400);
     throw new Error("Provide all details");
@@ -20,6 +21,7 @@ export const addPost = asyncHandler(async (req: Request, res: Response) => {
     description,
     hideComment,
     hideLikes,
+    hashtags:hashtag.split('')
   });
 
   if (!post) {
@@ -49,7 +51,6 @@ export const getPost = asyncHandler(async (req: Request, res: Response) => {
 
 export const getUserPost = asyncHandler(async (req: Request, res: Response) => {
   const id = req.body.userId;
-  console.log(id+"hello")
   const posts = await Post.find({userId:id, isBlocked: false,isDeleted:false }).populate({
     path: 'userId',
     select: 'userName profileImg'
