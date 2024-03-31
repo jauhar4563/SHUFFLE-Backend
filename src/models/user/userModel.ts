@@ -25,14 +25,14 @@ const userSchema: Schema = new Schema<user>({
     },
     profileImg: {
         type: String,
-        default: 'default_profile_image_url'
+        default: 'https://cdn-icons-png.flaticon.com/512/1053/1053244.png'
     },
     bio: {
         type: String,
         default: ''
     },
     savedPost: {
-        type: [Schema.Types.ObjectId],
+        type: [{ type: Schema.Types.ObjectId, ref: 'Post' }],
         default: []
     },
     isOnline: {

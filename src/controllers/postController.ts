@@ -1,16 +1,26 @@
 import Post from "../models/post/postModel";
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
+import User from "../models/user/userModel";
+import generateToken from "../utils/generateToken";
 
 // @desc    Create new post
 // @route   POST /post/create-post
 // @access  Public
 
 export const addPost = asyncHandler(async (req: Request, res: Response) => {
-  const { userId, imageUrl,title, description ,hideLikes,hideComment,hashtag } = req.body;
-    console.log(userId,imageUrl, description,hideLikes,hideComment,hashtag);
-    
-  if (!userId || !imageUrl || !description) {
+  const {
+    userId,
+    imageUrl,
+    title,
+    description,
+    hideLikes,
+    hideComment,
+    hashtag,
+  } = req.body;
+  console.log(userId, imageUrl, description, hideLikes, hideComment, hashtag);
+
+  if (!userId.trim() || !imageUrl.trim() || !description.trim()) {
     res.status(400);
     throw new Error("Provide all details");
   }
@@ -21,7 +31,7 @@ export const addPost = asyncHandler(async (req: Request, res: Response) => {
     description,
     hideComment,
     hideLikes,
-    hashtags:hashtag.split('')
+    hashtags: hashtag.split(" "),
   });
 
   if (!post) {
@@ -36,14 +46,18 @@ export const addPost = asyncHandler(async (req: Request, res: Response) => {
 // @access  Public
 
 export const getPost = asyncHandler(async (req: Request, res: Response) => {
-  const posts = await Post.find({ isBlocked: false ,isDeleted:false}).populate({
-    path: 'userId',
-    select: 'userName profileImg'
-  }).sort({date:-1});
+  const posts = await Post.find({ isBlocked: false, isDeleted: false })
+    .populate({
+      path: "userId",
+      select: "userName profileImg",
+    })
+    .populate({
+      path: "likes",
+      select: "userName profileImg",
+    })
+    .sort({ date: -1 });
   res.status(200).json(posts);
 });
-
-
 
 // @desc    Get User Posts
 // @route   get /post/get-post
@@ -51,10 +65,16 @@ export const getPost = asyncHandler(async (req: Request, res: Response) => {
 
 export const getUserPost = asyncHandler(async (req: Request, res: Response) => {
   const id = req.body.userId;
-  const posts = await Post.find({userId:id, isBlocked: false,isDeleted:false }).populate({
-    path: 'userId',
-    select: 'userName profileImg'
-  }).sort({date:-1});
+  const posts = await Post.find({
+    userId: id,
+    isBlocked: false,
+    isDeleted: false,
+  })
+    .populate({
+      path: "userId",
+      select: "userName profileImg",
+    })
+    .sort({ date: -1 });
   res.status(200).json(posts);
 });
 
@@ -64,7 +84,7 @@ export const getUserPost = asyncHandler(async (req: Request, res: Response) => {
 
 export const updatePost = asyncHandler(async (req: Request, res: Response) => {
   const postId = req.body.postId;
-  const {userId, title, description, hideComment, hideLikes } = req.body;
+  const { userId, title, description, hideComment, hideLikes } = req.body;
   const post = await Post.findById(postId);
 
   if (!post) {
@@ -78,37 +98,131 @@ export const updatePost = asyncHandler(async (req: Request, res: Response) => {
   if (hideLikes !== undefined) post.hideLikes = hideLikes;
 
   await post.save();
-  const posts = await Post.find({userId:userId, isBlocked: false ,isDeleted:false}).populate({
-    path: 'userId',
-    select: 'userName profileImg'
-  }).sort({date:-1});
-  res.status(200).json({posts});
+  const posts = await Post.find({
+    userId: userId,
+    isBlocked: false,
+    isDeleted: false,
+  })
+    .populate({
+      path: "userId",
+      select: "userName profileImg",
+    })
+    .sort({ date: -1 });
+  res.status(200).json({ posts });
 });
-
-
 
 // @desc    Delete Post
 // @route   POST /post/delete-post
 // @access  Public
 
 export const deletePost = asyncHandler(async (req: Request, res: Response) => {
-    
-    const {postId,userId} = req.body;
-    console.log(postId,userId)
-      const post = await Post.findById(postId);
-      if (!post) {
-        res.status(404);
-        throw new Error("Post Cannot be found")
-      }
+  const { postId, userId } = req.body;
+  console.log(postId, userId);
+  const post = await Post.findById(postId);
+  if (!post) {
+    res.status(404);
+    throw new Error("Post Cannot be found");
+  }
+
+  post.isDeleted = true;
+  await post.save();
+  const posts = await Post.find({
+    userId: userId,
+    isBlocked: false,
+    isDeleted: false,
+  })
+    .populate({
+      path: "userId",
+      select: "userName profileImg",
+    })
+    .sort({ date: -1 });
+
+  res.status(200).json({ posts });
+});
+
+
+// @desc    Like Post
+// @route   POST /post/like-post
+// @access  Public
+
+export const likePost = asyncHandler(async (req: Request, res: Response) => {
+  const { postId, userId } = req.body;
+  const post = await Post.findById(postId);
+  if (!post) {
+    res.status(404);
+    throw new Error("Post not found");
+  }
+
+  const isLiked = post.likes.includes(userId);
+
+  if (isLiked) {
   
-      post.isDeleted = true;
-      await post.save();
-      const posts = await Post.find({userId:userId, isBlocked: false,isDeleted:false }).populate({
-        path: 'userId',
-        select: 'userName profileImg'
-      }).sort({date:-1});
+    await Post.findOneAndUpdate({_id: postId}, {$pull: {likes: userId}}, {new: true})
+  } else {
+ 
+    await Post.findOneAndUpdate({_id: postId}, {$push: {likes: userId }}, {new: true})
+  }
+
+
+  const posts = await Post.find({userId:userId, isBlocked: false ,isDeleted:false }).populate({
+    path: 'userId',
+    select: 'userName profileImg'
+  }).sort({date:-1});
+  console.log(posts)
+  res.status(200).json({ posts });
+});
+
+
+// @desc    Save Post
+// @route   POST /post/like-post
+// @access  Public
+
+export const savePost = asyncHandler(async (req: Request, res: Response) => {
+  const { postId, userId } = req.body;
+  const user = await User.findById(userId);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  const isSaved = user.savedPost.includes(postId);
+
+  if (isSaved) {
   
-      res.status(200).json({ posts });
-    
-  });
-  
+    await User.findOneAndUpdate({_id: userId}, {$pull: {savedPost: postId}}, {new: true})
+  } else {
+ 
+    await User.findOneAndUpdate({_id: userId}, {$push: {savedPost: postId }}, {new: true})
+  }
+
+
+  const userData = await User.find({userId:userId, isBlocked: false }).sort({date:-1});
+  res.status(200).json({  
+    _id: user.id,
+    userName: user.userName,
+    email: user.email,
+    profileImg: user.profileImg,
+    savedPost:user.savedPost,
+    token: generateToken(user.id),});
+});
+
+
+
+// @desc    Get User Saved Posts
+// @route   get /post/get-saved-post
+// @access  Public
+
+export const getSavedPost = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.body.userId;
+  const user =  await User.findOne({_id:id, isBlocked: false },{savedPost:1,_id:0});
+  if(user){
+
+    const savedPostIds = user.savedPost; 
+    const posts = await Post.find({ _id: { $in: savedPostIds } }).populate('userId');
+    console.log(posts)
+    res.status(200).json(posts);
+  }else{
+    res.status(400);
+    throw new Error("User Not Found")
+  }
+});

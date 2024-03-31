@@ -1,9 +1,9 @@
 import { Document,Types } from "mongoose";
 
 export enum Gender {
-    Male = 'male',
-    Female = 'female',
-    Other = 'other'
+    Male = 'Male',
+    Female = 'Female',
+    Other = 'Other'
 }
 
 interface UserInterface extends Document {

@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 const errorHandler = (
   err: Error,
@@ -12,8 +12,8 @@ const errorHandler = (
 
   res.json({
     message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+    stack: process.env.NODE_ENV === "production" ? null : err.stack,
   });
 };
 
-export default  errorHandler ;
+export default errorHandler;

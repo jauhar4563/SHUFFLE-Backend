@@ -6,6 +6,7 @@ import User from "../models/user/userModel";
 import generateToken from "../utils/generateToken";
 import sendVerifyMail from "../utils/sendVerifyMail";
 import Hashtag from "../models/hashtag/hashtagModel";
+import Connections from "../models/connections/connectionModel";
 
 // @desc    Register new User
 // @route   USER /register
@@ -16,7 +17,8 @@ export const registerUser = asyncHandler(
     const { username: userName, email, password } = req.body;
     console.log(userName, email, password);
 
-    if (!userName || !email || !password) {
+    if (!userName.trim() || !email.trim() || !password.trim()) {
+      res.status(400);
       throw new Error("Please add fields");
     }
     console.log(userName, email, password);
@@ -83,6 +85,9 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
     email: userDetails.email,
     password: userDetails.password,
   });
+  await Connections.create({
+    userId: user._id,
+  });
 
   delete sessionData.userDetails;
   delete sessionData.otp;
@@ -124,6 +129,10 @@ export const resendOtp = asyncHandler(async (req: Request, res: Response) => {
 
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
+  if (!email.trim() || !password.trim()) {
+    res.status(400);
+    throw new Error("Please add fields");
+  }
   const user = await User.findOne({ email });
 
   if (user) {
@@ -137,9 +146,13 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     res.json({
       message: "Login Successful",
       _id: user.id,
-      name: user.userName,
+      userName: user.userName,
       email: user.email,
       profileImg: user.profileImg,
+      savedPost: user.savedPost,
+      bio: user.bio,
+      phone: user.phone,
+      isPrivate: user.isPrivate,
       token: generateToken(user.id),
     });
   } else {
@@ -161,23 +174,28 @@ export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
     if (userExist) {
       if (userExist.isBlocked) {
         res.status(400);
-        throw new Error( "User is blocked" );
+        throw new Error("User is blocked");
       }
 
       if (userExist.isGoogle) {
         res.json({
           message: "Login Successful",
           _id: userExist.id,
-          name: userExist.userName,
+          userName: userExist.userName,
           email: userExist.email,
           profileImg: userExist.profileImg,
+          savedPost: userExist.savedPost,
+          bio: userExist.bio,
+          phone: userExist.phone,
+          isPrivate: userExist.isPrivate,
           token: generateToken(userExist.id),
         });
         return;
-      }
-      else{
+      } else {
         res.status(400);
-        throw new Error("User already Exist with that email. Try a differeny email")
+        throw new Error(
+          "User already Exist with that email. Try a differeny email"
+        );
       }
     }
 
@@ -192,15 +210,22 @@ export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
       profileImg: imageUrl,
       isGoogle: true,
     });
+    await Connections.create({
+      userId: newUser._id,
+    });
 
     const token = generateToken(newUser.id);
 
     res.status(200).json({
       message: "Login Successful",
       _id: newUser.id,
-      name: newUser.userName,
+      userName: newUser.userName,
       email: newUser.email,
       profileImg: newUser.profileImg,
+      savedPost: newUser.savedPost,
+      bio: newUser.bio,
+      phone: newUser.phone,
+      isPrivate: newUser.isPrivate,
       token: token,
     });
   } catch (error) {
@@ -218,7 +243,7 @@ export const forgotPassword = asyncHandler(
     const { email } = req.body;
     const user = await User.findOne({ email });
 
-    if(!user){
+    if (!user) {
       res.status(400);
       throw new Error("User not found");
     }
@@ -273,12 +298,10 @@ export const forgotOtp = asyncHandler(async (req: Request, res: Response) => {
   delete sessionData.otp;
   delete sessionData.otpGeneratedTime;
 
-  res
-    .status(200)
-    .json({
-      message: "OTP has been verified. Please reset password",
-      email: sessionData?.email,
-    });
+  res.status(200).json({
+    message: "OTP has been verified. Please reset password",
+    email: sessionData?.email,
+  });
 });
 
 // @desc    Reset-Password
@@ -314,14 +337,13 @@ export const resetPassword = asyncHandler(
   }
 );
 
-
-    // @desc    Get all hashtags
+// @desc    Get all hashtags
 // @route   User /get-hashtags
 // @access  Public
 
 export const getHashtags = asyncHandler(async (req: Request, res: Response) => {
-  const hashtags = await Hashtag.find({isBlocked:false}).sort({date:-1});;
-  console.log("got request")
+  const hashtags = await Hashtag.find({ isBlocked: false }).sort({ date: -1 });
+  console.log("got request");
   if (hashtags) {
     res.status(200).json({ hashtags });
   } else {
@@ -329,3 +351,81 @@ export const getHashtags = asyncHandler(async (req: Request, res: Response) => {
     throw new Error(" No Hashtags Found");
   }
 });
+
+// @desc    Get all hashtags
+// @route   User /get-hashtags
+// @access  Public
+
+export const getUserDetails = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    console.log(userId + "hello");
+    const user = await User.findById(userId);
+    const connections = await Connections.findOne({ userId });
+    console.log("got request");
+    if (user) {
+      res.status(200).json({ user, connections });
+    } else {
+      res.status(404);
+      throw new Error(" user Not found");
+    }
+  }
+);
+
+// @desc    Edit User Profile
+// @route   User /edit-profile
+// @access  Public
+
+export const editProfile = asyncHandler(async (req: Request, res: Response) => {
+  const { userId, name, phone, bio, gender, isPrivate } = req.body;
+  const user = await User.findById(userId);
+  console.log(userId, name, phone, bio, gender, isPrivate);
+
+  if (!user) {
+    res.status(400);
+    throw new Error("Post cannot be found");
+  }
+
+  if (name) user.userName = name;
+  if (phone) user.phone = phone;
+  if (bio) user.bio = bio;
+  if (gender) user.gender = gender;
+  if (isPrivate !== undefined) user.isPrivate = isPrivate;
+
+  await user.save();
+
+  res.status(200).json({
+    _id: user.id,
+    userName: user.userName,
+    email: user.email,
+    profileImg: user.profileImg,
+    savedPost: user.savedPost,
+    bio: user.bio,
+    phone: user.phone,
+    isPrivate: user.isPrivate,
+    token: generateToken(user.id),
+  });
+});
+
+export const userSuggestions = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { userId } = req.body;
+
+    const connection = await Connections.findOne({ userId });
+    if (!connection) {
+      const users = await User.find({ _id: { $ne: userId } }).limit(5);
+      res.status(200).json({ suggestedUsers:users });
+      return;
+    }
+    const followingIds = connection.following.map((user) => user._id);
+    const requestedIds = connection.requestSent.map((user) => user._id);
+
+    const suggestedUsers = await User.find({
+      _id: { $nin: [...followingIds, ...requestedIds, userId] },
+    }).limit(5);
+    console.log(suggestedUsers)
+    res
+      .status(200)
+      .json({ message: "OTP sent for verification", suggestedUsers });
+  }
+);

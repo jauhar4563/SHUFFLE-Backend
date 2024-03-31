@@ -23,6 +23,11 @@ const protect = asyncHandler(
           process.env.JWT_SECRET as string
         );
         req.user = await User.findById(decoded.id).select("-password");
+
+        if (req.user.isBlocked) {
+          res.status(401);
+          throw new Error("User Is Blocked");
+        }
         next();
       } catch (error) {
         console.log(error);
