@@ -3,9 +3,11 @@ import {
   Login,
   addHashtags,
   getHashtags,
+  getPost,
   getUsers,
   hashtagBlock,
   hashtagEdit,
+  postBlock,
   userBlock,
 } from "../controllers/adminController";
 import { protectAdmin } from "../middlewares/adminAuth";
@@ -19,5 +21,7 @@ router.get("/hashtags", protectAdmin, getHashtags);
 router.post("/add-hashtag", protectAdmin, addHashtags);
 router.post("/block-hashtag", protectAdmin, hashtagBlock);
 router.post("/edit-hashtag", hashtagEdit);
+router.get('/get-posts',protectAdmin,getPost);
+router.post('/post-block',protectAdmin,postBlock)
 
 export default router;

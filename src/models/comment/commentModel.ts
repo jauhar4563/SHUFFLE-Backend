@@ -1,19 +1,27 @@
-import { Schema, model, Document, Types } from "mongoose";
-import CommentInterface from "./commentTypes";
 
-const CommentSchema = new Schema<CommentInterface>(
-  {
+
+import { Schema, model, Document, Types } from 'mongoose';
+import {ReplyCommentInterface , CommentInterface }from './commentTypes'
+
+const ReplyCommentSchema = new Schema<ReplyCommentInterface>({
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  replyComment: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
+});
+
+
+const CommentSchema = new Schema<CommentInterface>({
     postId: {
       type: Schema.Types.ObjectId,
-      ref: "Post",
+      ref: 'Post',
       required: true,
     },
     userId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
-    content: {
+    comment: {
       type: String,
       required: true,
     },
@@ -21,14 +29,10 @@ const CommentSchema = new Schema<CommentInterface>(
       type: Boolean,
       default: false,
     },
-    timestamp: {
-      type: Date,
-      default: Date.now,
-    },
-  },
-  { timestamps: true }
-);
-
-const Comment = model<CommentInterface>("Comment", CommentSchema);
-
-export default Comment;
+    replyComments: [ReplyCommentSchema]
+ 
+  },{timestamps:true});
+  
+  const Comment = model<CommentInterface>('Comment', CommentSchema);
+  
+  export default Comment;

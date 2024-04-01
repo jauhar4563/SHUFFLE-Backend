@@ -6,6 +6,17 @@ import User from "../models/user/userModel";
 import Post from "../models/post/postModel";
 import Hashtag from "../models/hashtag/hashtagModel";
 
+interface PaginationMeta {
+  next?: {
+    page: number;
+    limit: number;
+  };
+  prev?: {
+    page: number;
+    limit: number;
+  };
+}
+
 // @desc    Admin Login
 // @route   ADMIN /Admin/login
 // @access  Public
@@ -29,15 +40,42 @@ export const Login = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
-// @desc    Get all users
+// @desc    Get all users with pagination
 // @route   ADMIN /admin/get-users
 // @access  Public
 
 export const getUsers = asyncHandler(async (req: Request, res: Response) => {
-  const users = await User.find({}).sort({ date: -1 });
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+
+  const totalUsers = await User.countDocuments({});
+
+  const users = await User.find({})
+    .sort({ date: -1 })
+    .limit(limit)
+    .skip(startIndex);
+
+  const pagination: PaginationMeta = {};
+
+  if (endIndex < totalUsers) {
+    pagination.next = {
+      page: page + 1,
+      limit: limit,
+    };
+  }
+
+  if (startIndex > 0) {
+    pagination.prev = {
+      page: page - 1,
+      limit: limit,
+    };
+  }
 
   if (users) {
-    res.status(200).json({ users });
+    res.status(200).json({ users, pagination, totalUsers });
   } else {
     res.status(404);
     throw new Error("Users Not Found");
@@ -49,14 +87,64 @@ export const getUsers = asyncHandler(async (req: Request, res: Response) => {
 // @access  Public
 
 export const getPost = asyncHandler(async (req: Request, res: Response) => {
-  const posts = await Post.find({}).sort({ date: -1 });
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  console.log(page, limit);
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+  const totalPosts = await Post.countDocuments({});
+
+  const posts = await Post.find({})
+    .populate({
+      path: "userId",
+      select: "userName profileImg",
+    })
+    .sort({ date: -1 })
+    .limit(limit)
+    .skip(startIndex);
+  const pagination: PaginationMeta = {};
+
+  if (endIndex < totalPosts) {
+    pagination.next = {
+      page: page + 1,
+      limit: limit,
+    };
+  }
+
+  if (startIndex > 0) {
+    pagination.prev = {
+      page: page - 1,
+      limit: limit,
+    };
+  }
 
   if (posts) {
-    res.status(200).json({ posts });
+    res.status(200).json({ posts, pagination, totalPosts });
   } else {
     res.status(404);
     throw new Error(" No Post Found");
   }
+});
+// @desc    Block Post
+// @route   ADMIN /admin/block-post
+// @access  Public
+
+export const postBlock = asyncHandler(async (req: Request, res: Response) => {
+  const postId = req.body.postId;
+  console.log(req.body);
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    res.status(400);
+    throw new Error("User not found");
+  }
+
+  post.isBlocked = !post.isBlocked;
+  await post.save();
+
+  const posts = await Post.find({}).sort({ date: -1 });
+  const blocked = post.isBlocked ? "Blocked" : "Unblocked";
+  res.status(200).json({ posts, message: `You have ${blocked} ${post.title}` });
 });
 
 // @desc    Block Users
@@ -106,10 +194,33 @@ export const addHashtags = asyncHandler(async (req: Request, res: Response) => {
 // @access  Public
 
 export const getHashtags = asyncHandler(async (req: Request, res: Response) => {
-  const hashtags = await Hashtag.find({}).sort({ date: -1 });
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  console.log(page, limit);
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+  const totalHashtags = await Hashtag.countDocuments({});
+  const hashtags = await Hashtag.find({})
+    .sort({ date: -1 })
+    .limit(limit)
+    .skip(startIndex);
+  const pagination: PaginationMeta = {};
+  if (endIndex < totalHashtags) {
+    pagination.next = {
+      page: page + 1,
+      limit: limit,
+    };
+  }
+
+  if (startIndex > 0) {
+    pagination.prev = {
+      page: page - 1,
+      limit: limit,
+    };
+  }
 
   if (hashtags) {
-    res.status(200).json({ hashtags });
+    res.status(200).json({ hashtags, pagination, totalHashtags });
   } else {
     res.status(404);
     throw new Error(" No Hashtags Found");

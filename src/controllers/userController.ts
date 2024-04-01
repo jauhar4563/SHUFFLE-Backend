@@ -414,7 +414,7 @@ export const userSuggestions = asyncHandler(
 
     const connection = await Connections.findOne({ userId });
     if (!connection) {
-      const users = await User.find({ _id: { $ne: userId } }).limit(5);
+      const users = await User.find({ _id: { $ne: userId } });
       res.status(200).json({ suggestedUsers:users });
       return;
     }
@@ -427,6 +427,6 @@ export const userSuggestions = asyncHandler(
     console.log(suggestedUsers)
     res
       .status(200)
-      .json({ message: "OTP sent for verification", suggestedUsers });
+      .json({  suggestedUsers });
   }
 );

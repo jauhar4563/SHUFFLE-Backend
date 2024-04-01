@@ -143,22 +143,22 @@ export const acceptRequest = asyncHandler(
 export const rejectRequest = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId, requestedUser } = req.body;
-
     await Connections.findOneAndUpdate(
       { userId },
-      { $pull: { requestSent: requestedUser } },
+      { $pull: { requested: requestedUser } },
       { new: true }
     );
 
     await Connections.findOneAndUpdate(
       { userId: requestedUser },
-      { $pull: { requested: userId } },
+      { $pull: { requestSent: userId } },
       { new: true }
     );
     const connections = await Connections.findOne({ userId }).populate({
         path: "requested",
         select: "userName profileImg",
       });
+      console.log("reject request")
 
     res
       .status(200)
