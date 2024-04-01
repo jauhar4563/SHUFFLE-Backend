@@ -11,22 +11,22 @@ import generateToken from "../utils/generateToken";
 export const addPost = asyncHandler(async (req: Request, res: Response) => {
   const {
     userId,
-    imageUrl,
+    imageUrls,
     title,
     description,
     hideLikes,
     hideComment,
     hashtag,
   } = req.body;
-  console.log(userId, imageUrl, description, hideLikes, hideComment, hashtag);
+  console.log(imageUrls);
 
-  if (!userId.trim() || !imageUrl.trim() || !description.trim()) {
+  if (!userId.trim() || !imageUrls || !description.trim()) {
     res.status(400);
     throw new Error("Provide all details");
   }
   const post = await Post.create({
     userId,
-    imageUrl,
+    imageUrl:imageUrls,
     title,
     description,
     hideComment,

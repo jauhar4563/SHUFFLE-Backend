@@ -377,9 +377,9 @@ export const getUserDetails = asyncHandler(
 // @access  Public
 
 export const editProfile = asyncHandler(async (req: Request, res: Response) => {
-  const { userId, name, phone, bio, gender, isPrivate } = req.body;
+  const { userId,image, name, phone, bio, gender, isPrivate } = req.body;
   const user = await User.findById(userId);
-  console.log(userId, name, phone, bio, gender, isPrivate);
+  console.log(userId,image, name, phone, bio, gender, isPrivate);
 
   if (!user) {
     res.status(400);
@@ -387,6 +387,7 @@ export const editProfile = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (name) user.userName = name;
+  if(image) user.profileImg=image;
   if (phone) user.phone = phone;
   if (bio) user.bio = bio;
   if (gender) user.gender = gender;

@@ -2,7 +2,7 @@ import { Document, Schema, Types } from "mongoose";
 
 interface PostInterface extends Document {
     userId: Types.ObjectId;
-    imageUrl: string;
+    imageUrl: string[];
     title: string;
     description: string;
     date: Date;

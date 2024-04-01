@@ -8,7 +8,7 @@ import User from "../models/user/userModel";
 export const getConnection = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId } = req.body;
-    console.log(userId);
+    console.log(userId +"hello");
 
     const connection = await Connections.findOne({ userId }).populate({
       path: "followers",
@@ -116,7 +116,7 @@ export const acceptRequest = asyncHandler(
       { userId },
       {
         $pull: { requested: requestedUser },
-        $addToSet: { followers: requestedUser, following: requestedUser },
+        $addToSet: { followers: requestedUser },
       },
       { new: true }
     );
