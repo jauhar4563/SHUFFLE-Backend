@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import User from "../models/user/userModel";
 import generateToken from "../utils/generateToken";
+import Connections from "../models/connections/connectionModel";
 
 // @desc    Create new post
 // @route   POST /post/create-post
@@ -18,12 +19,13 @@ export const addPost = asyncHandler(async (req: Request, res: Response) => {
     hideComment,
     hashtag,
   } = req.body;
-  console.log(imageUrls);
+  console.log(hashtag);
 
   if (!userId.trim() || !imageUrls || !description.trim()) {
     res.status(400);
     throw new Error("Provide all details");
   }
+  const hashtagsArray = hashtag.map((tag: { value: string }) => tag.value);
   const post = await Post.create({
     userId,
     imageUrl:imageUrls,
@@ -31,22 +33,43 @@ export const addPost = asyncHandler(async (req: Request, res: Response) => {
     description,
     hideComment,
     hideLikes,
-    hashtags: hashtag.split(" "),
+    hashtags: hashtagsArray
   });
 
   if (!post) {
     res.status(400);
     throw new Error("Cannot add post");
   }
-  res.status(200).json({ message: "Post added successfully" });
+  const posts = await Post.find({ isBlocked: false, isDeleted: false })
+  .populate({
+    path: "userId",
+    select: "userName profileImg",
+  })
+  .populate({
+    path: "likes",
+    select: "userName profileImg",
+  })
+  .sort({ date: -1 });
+  res.status(200).json({ message: "Post added successfully" ,posts});
 });
 
-// @desc    Get all Posts
-// @route   get /post/get-post
+// @desc    post all Posts
+// @route   post /post/get-post
 // @access  Public
 
 export const getPost = asyncHandler(async (req: Request, res: Response) => {
-  const posts = await Post.find({ isBlocked: false, isDeleted: false })
+  const {userId}  = req.body;
+  const connections = await Connections.findOne({userId},{following:1});
+  const followingUsers = connections?.following;
+  const users = await User.find({
+    $or: [
+      { isPrivate: false },
+      { _id: { $in: followingUsers } } 
+    ]
+  });
+  const userIds = users.map(user => user._id);
+  
+  const posts = await Post.find({ userId: { $in: [...userIds,userId] },isBlocked: false, isDeleted: false })
     .populate({
       path: "userId",
       select: "userName profileImg",
@@ -56,6 +79,7 @@ export const getPost = asyncHandler(async (req: Request, res: Response) => {
       select: "userName profileImg",
     })
     .sort({ date: -1 });
+
   res.status(200).json(posts);
 });
 
@@ -84,7 +108,7 @@ export const getUserPost = asyncHandler(async (req: Request, res: Response) => {
 
 export const updatePost = asyncHandler(async (req: Request, res: Response) => {
   const postId = req.body.postId;
-  const { userId, title, description, hideComment, hideLikes } = req.body;
+  const { userId, title, description,hashtags, hideComment, hideLikes } = req.body;
   const post = await Post.findById(postId);
 
   if (!post) {
@@ -96,8 +120,15 @@ export const updatePost = asyncHandler(async (req: Request, res: Response) => {
   if (description) post.description = description;
   if (hideComment !== undefined) post.hideComment = hideComment;
   if (hideLikes !== undefined) post.hideLikes = hideLikes;
+  if (hashtags !==undefined){
+    const hashtagsArray = hashtags.map((tag: { value: string }) => tag.value);
+    post.hashtags = hashtagsArray;
+  } 
+  
+
 
   await post.save();
+
   const posts = await Post.find({
     userId: userId,
     isBlocked: false,
@@ -152,17 +183,13 @@ export const likePost = asyncHandler(async (req: Request, res: Response) => {
     res.status(404);
     throw new Error("Post not found");
   }
-
   const isLiked = post.likes.includes(userId);
 
   if (isLiked) {
-  
     await Post.findOneAndUpdate({_id: postId}, {$pull: {likes: userId}}, {new: true})
   } else {
- 
     await Post.findOneAndUpdate({_id: postId}, {$push: {likes: userId }}, {new: true})
   }
-
 
   const posts = await Post.find({userId:userId, isBlocked: false ,isDeleted:false }).populate({
     path: 'userId',

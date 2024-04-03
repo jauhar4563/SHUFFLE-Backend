@@ -19,7 +19,7 @@ import {
 const router = express.Router();
 
 router.post("/add-post", protect, addPost);
-router.get("/get-post", protect, getPost);
+router.post("/get-post", protect, getPost);
 router.post("/get-user-post", protect, getUserPost);
 router.post("/edit-post", protect, updatePost);
 router.post("/delete-post", protect, deletePost);
