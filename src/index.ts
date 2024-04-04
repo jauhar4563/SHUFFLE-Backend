@@ -9,7 +9,8 @@ import connectDB from "./config/db";
 import userRoutes from "./routes/userRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import postRoutes from "./routes/postRoutes";
-import connectionRoutes from './routes/connectionRoutes'
+import connectionRoutes from "./routes/connectionRoutes";
+import ChatRoutes from "./routes/chatRoutes";
 import cors from "cors";
 import errorHandler from "./middlewares/errorMiddleware";
 
@@ -56,7 +57,7 @@ app.use("/api/", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/connection", connectionRoutes);
-
+app.use("/api/chat", ChatRoutes);
 
 app.use(errorHandler);
 
