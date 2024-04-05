@@ -1,8 +1,8 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export interface Message {
   conversationId: string;
-  sender: string;
+  sender: Types.ObjectId;
   text: string;
   createdAt: Date;
   updatedAt: Date;

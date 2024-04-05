@@ -81,9 +81,16 @@ export const addMessageController = asyncHandler(async (req: Request, res: Respo
 
 export const getMessagesController = asyncHandler(async (req: Request, res: Response) => {
   try {
+    console.log(req.params.conversationId);
+    
     const messages = await Message.find({
       conversationId: req.params.conversationId,
+    }).populate({
+        path: 'sender',
+        select: 'userName profileImg'
     });
+   
+    console.log(messages)
     res.status(200).json(messages);
   } catch (err) {
     res.status(500).json(err);

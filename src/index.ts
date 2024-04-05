@@ -13,6 +13,9 @@ import connectionRoutes from "./routes/connectionRoutes";
 import ChatRoutes from "./routes/chatRoutes";
 import cors from "cors";
 import errorHandler from "./middlewares/errorMiddleware";
+import { Server, Socket } from 'socket.io';
+import socketIo_Config from './utils/socket/socket';
+import http from 'http';
 
 dotenv.config();
 
@@ -53,6 +56,18 @@ app.use(
 connectDB();
 const port = process.env.PORT || 3000;
 
+
+// Create HTTP server
+const server = http.createServer(app);
+
+const io: Server = new Server(server, {
+  cors: { origin: 'http://localhost:5173' }
+});
+
+// Configure Socket.IO
+socketIo_Config(io);
+
+
 app.use("/api/", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/post", postRoutes);
@@ -61,6 +76,6 @@ app.use("/api/chat", ChatRoutes);
 
 app.use(errorHandler);
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
 });
