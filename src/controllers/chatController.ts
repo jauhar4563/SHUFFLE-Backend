@@ -90,7 +90,6 @@ export const getMessagesController = asyncHandler(async (req: Request, res: Resp
         select: 'userName profileImg'
     });
    
-    console.log(messages)
     res.status(200).json(messages);
   } catch (err) {
     res.status(500).json(err);
