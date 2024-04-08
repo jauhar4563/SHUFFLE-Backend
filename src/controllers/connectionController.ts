@@ -5,18 +5,18 @@ import User from "../models/user/userModel";
 
 
 
-export const getConnection = asyncHandler(
+export const getConnectionController = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId } = req.body;
     console.log(userId +"hello");
 
     const connection = await Connections.findOne({ userId }).populate({
       path: "followers",
-      select: "userName profileImg",
+      select: "userName profileImg isVerified",
     })
     .populate({
       path: "following",
-      select: "userName profileImg",
+      select: "userName profileImg isVerified",
     })
     res.status(200).json({ connection });
   }
@@ -24,14 +24,14 @@ export const getConnection = asyncHandler(
 
 
 
-export const getFollowRequests = asyncHandler(
+export const getFollowRequestsController = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId } = req.body;
     console.log(userId);
 
     const requests = await Connections.findOne({ userId }).populate({
       path: "requested",
-      select: "userName profileImg",
+      select: "userName profileImg isVerified",
     });
     console.log(requests?.requested);
     res.status(200).json({ requests: requests?.requested });
@@ -41,7 +41,7 @@ export const getFollowRequests = asyncHandler(
 
 
 
-export const followUser = asyncHandler(async (req: Request, res: Response) => {
+export const followUserController = asyncHandler(async (req: Request, res: Response) => {
   const { userId, followingUser } = req.body;
   console.log(userId, followingUser);
   const followingUserInfo = await User.findById(followingUser);
@@ -87,7 +87,7 @@ export const followUser = asyncHandler(async (req: Request, res: Response) => {
 
 
 
-export const unFollowUser = asyncHandler(
+export const unFollowUserController = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId, unfollowingUser } = req.body;
 
@@ -108,7 +108,7 @@ export const unFollowUser = asyncHandler(
 );
 
 
-export const acceptRequest = asyncHandler(
+export const acceptRequestController = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId, requestedUser } = req.body;
     console.log(userId,requestedUser)
@@ -130,7 +130,7 @@ export const acceptRequest = asyncHandler(
     );
     const connections = await Connections.findOne({ userId }).populate({
         path: "requested",
-        select: "userName profileImg",
+        select: "userName profileImg isVerified",
       });
           res
       .status(200)
@@ -140,7 +140,7 @@ export const acceptRequest = asyncHandler(
 
 
 
-export const rejectRequest = asyncHandler(
+export const rejectRequestController = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId, requestedUser } = req.body;
     await Connections.findOneAndUpdate(
@@ -156,7 +156,7 @@ export const rejectRequest = asyncHandler(
     );
     const connections = await Connections.findOne({ userId }).populate({
         path: "requested",
-        select: "userName profileImg",
+        select: "userName profileImg isVerified",
       });
       console.log("reject request")
 

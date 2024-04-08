@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
-import asyncHandler from "express-async-handler";
 import Admin from "../models/admin/adminModel";
 import generateToken from "../utils/generateToken";
 import User from "../models/user/userModel";
 import Post from "../models/post/postModel";
 import Hashtag from "../models/hashtag/hashtagModel";
+import asyncHandler from "express-async-handler";
+import Report from "../models/reports/reportModel";
+
 
 interface PaginationMeta {
   next?: {
@@ -21,7 +23,7 @@ interface PaginationMeta {
 // @route   ADMIN /Admin/login
 // @access  Public
 
-export const Login = asyncHandler(async (req: Request, res: Response) => {
+export const LoginController = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const admin = await Admin.findOne({ email });
 
@@ -44,7 +46,7 @@ export const Login = asyncHandler(async (req: Request, res: Response) => {
 // @route   ADMIN /admin/get-users
 // @access  Public
 
-export const getUsers = asyncHandler(async (req: Request, res: Response) => {
+export const getUsersController = asyncHandler(async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 10;
 
@@ -86,18 +88,18 @@ export const getUsers = asyncHandler(async (req: Request, res: Response) => {
 // @route   ADMIN /admin/get-users
 // @access  Public
 
-export const getPost = asyncHandler(async (req: Request, res: Response) => {
+export const getPostController = asyncHandler(async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 10;
   console.log(page, limit);
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
-  const totalPosts = await Post.countDocuments({});
+  const totalPosts = await Post.countDocuments({isBlocked:true});
 
-  const posts = await Post.find({})
+  const posts = await Post.find({isBlocked:true})
     .populate({
       path: "userId",
-      select: "userName profileImg",
+      select: "userName profileImg isVerified",
     })
     .sort({ date: -1 })
     .limit(limit)
@@ -125,13 +127,63 @@ export const getPost = asyncHandler(async (req: Request, res: Response) => {
     throw new Error(" No Post Found");
   }
 });
+
+
+
+// @desc    Get all reports
+// @route   ADMIN /admin/get-reports
+// @access  Public
+
+
+export const getPostReports = asyncHandler(async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+  const totalReports = await Report.countDocuments({});
+
+  const reports = await Report.find({})
+    .populate({
+      path: "userId",
+      select: "userName profileImg isVerified",
+    }).
+    populate("postId")
+    .sort({ date: -1 })
+    .limit(limit)
+    .skip(startIndex);
+
+  const pagination: PaginationMeta = {};
+
+  if (endIndex < totalReports) {
+    pagination.next = {
+      page: page + 1,
+      limit: limit,
+    };
+  }
+
+  if (startIndex > 0) {
+    pagination.prev = {
+      page: page - 1,
+      limit: limit,
+    };
+  }
+
+  if (reports) {
+    res.status(200).json({ reports, pagination, totalReports });
+  } else {
+    res.status(404);
+    throw new Error(" No Post Found");
+  }
+});
+
+
 // @desc    Block Post
 // @route   ADMIN /admin/block-post
 // @access  Public
 
-export const postBlock = asyncHandler(async (req: Request, res: Response) => {
+export const postBlockController = asyncHandler(async (req: Request, res: Response) => {
   const postId = req.body.postId;
-  console.log(req.body);
+  console.log(req.body + "put");
   const post = await Post.findById(postId);
 
   if (!post) {
@@ -144,6 +196,7 @@ export const postBlock = asyncHandler(async (req: Request, res: Response) => {
 
   const posts = await Post.find({}).sort({ date: -1 });
   const blocked = post.isBlocked ? "Blocked" : "Unblocked";
+  console.log('block post')
   res.status(200).json({ posts, message: `You have ${blocked} ${post.title}` });
 });
 
@@ -151,7 +204,7 @@ export const postBlock = asyncHandler(async (req: Request, res: Response) => {
 // @route   ADMIN /admin/block-user
 // @access  Public
 
-export const userBlock = asyncHandler(async (req: Request, res: Response) => {
+export const userBlockController = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.body.userId;
   console.log(req.body);
   const user = await User.findById(userId);
@@ -175,7 +228,7 @@ export const userBlock = asyncHandler(async (req: Request, res: Response) => {
 // @route   ADMIN /admin/get-users
 // @access  Public
 
-export const addHashtags = asyncHandler(async (req: Request, res: Response) => {
+export const addHashtagsController = asyncHandler(async (req: Request, res: Response) => {
   const { hashtag } = req.body;
   const existingHashtags = await Hashtag.find({ hashtag });
   if (existingHashtags.length > 0) {
@@ -193,7 +246,7 @@ export const addHashtags = asyncHandler(async (req: Request, res: Response) => {
 // @route   ADMIN /admin/get-users
 // @access  Public
 
-export const getHashtags = asyncHandler(async (req: Request, res: Response) => {
+export const getHashtagsController = asyncHandler(async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 10;
   console.log(page, limit);
@@ -231,7 +284,7 @@ export const getHashtags = asyncHandler(async (req: Request, res: Response) => {
 // @route   ADMIN /admin/block-hashtag
 // @access  Public
 
-export const hashtagBlock = asyncHandler(
+export const hashtagBlockController = asyncHandler(
   async (req: Request, res: Response) => {
     const hashtagId = req.body.hashtagId;
     console.log(req.body);
@@ -257,7 +310,7 @@ export const hashtagBlock = asyncHandler(
 // @route   ADMIN /admin/edit-hashtag
 // @access  Public
 
-export const hashtagEdit = asyncHandler(async (req: Request, res: Response) => {
+export const hashtagEditController = asyncHandler(async (req: Request, res: Response) => {
   const { hashtagId, hashtag } = req.body;
   console.log(req.body);
   const ExistingTag = await Hashtag.findById(hashtagId);

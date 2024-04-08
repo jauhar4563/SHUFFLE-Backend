@@ -1,27 +1,29 @@
 import express from "express";
 import {
-  Login,
-  addHashtags,
-  getHashtags,
-  getPost,
-  getUsers,
-  hashtagBlock,
-  hashtagEdit,
-  postBlock,
-  userBlock,
+  LoginController,
+  addHashtagsController,
+  getHashtagsController,
+  getPostController,
+  getPostReports,
+  getUsersController,
+  hashtagBlockController,
+  hashtagEditController,
+  postBlockController,
+  userBlockController,
 } from "../controllers/adminController";
 import { protectAdmin } from "../middlewares/adminAuth";
 
 const router = express.Router();
 
-router.post("/login", Login);
-router.get("/get-users", protectAdmin, getUsers);
-router.post("/user-block", protectAdmin, userBlock);
-router.get("/hashtags", protectAdmin, getHashtags);
-router.post("/add-hashtag", protectAdmin, addHashtags);
-router.post("/block-hashtag", protectAdmin, hashtagBlock);
-router.post("/edit-hashtag", hashtagEdit);
-router.get('/get-posts',protectAdmin,getPost);
-router.post('/post-block',protectAdmin,postBlock)
+router.post("/login", LoginController);
+router.get("/get-users", protectAdmin, getUsersController);
+router.put("/user-block", protectAdmin, userBlockController);
+router.get("/hashtags", protectAdmin, getHashtagsController);
+router.post("/add-hashtag", protectAdmin, addHashtagsController);
+router.put("/block-hashtag", protectAdmin, hashtagBlockController);
+router.patch("/edit-hashtag", hashtagEditController);
+router.get('/get-posts',protectAdmin,getPostController);
+router.put('/post-block',protectAdmin,postBlockController);
+router.get('/get-reports',protectAdmin,getPostReports);
 
 export default router;

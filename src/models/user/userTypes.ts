@@ -18,6 +18,7 @@ interface UserInterface extends Document {
     isOnline: boolean;
     isBlocked: boolean;
     DND: boolean;
+    isVerified:boolean;
     isPrivate: boolean;
     isGoogle:boolean;
     isFacebook:boolean;

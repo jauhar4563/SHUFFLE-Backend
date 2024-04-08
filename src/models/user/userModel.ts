@@ -47,6 +47,10 @@ const userSchema: Schema = new Schema<user>({
         type: Boolean,
         default: false
     },
+    isVerified:{
+        type:Boolean,
+        default:false
+    },
     isPrivate: {
         type: Boolean,
         default: false

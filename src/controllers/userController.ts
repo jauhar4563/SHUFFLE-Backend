@@ -12,23 +12,11 @@ import Connections from "../models/connections/connectionModel";
 // @route   USER /register
 // @access  Public
 
-export const registerUser = asyncHandler(
+
+export const registerUserController = asyncHandler(
   async (req: Request, res: Response) => {
     const { username: userName, email, password } = req.body;
-    console.log(userName, email, password);
-
-    if (!userName.trim() || !email.trim() || !password.trim()) {
-      res.status(400);
-      throw new Error("Please add fields");
-    }
-    console.log(userName, email, password);
-
-    const userExist = await User.findOne({ email });
-
-    if (userExist) {
-      res.status(400);
-      throw new Error("User already exists");
-    }
+    
     const otp = speakeasy.totp({
       secret: speakeasy.generateSecret({ length: 20 }).base32,
       digits: 4,
@@ -52,12 +40,9 @@ export const registerUser = asyncHandler(
 // @route   USER /register-otp
 // @access  Public
 
-export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
+export const verifyOTPController = asyncHandler(async (req: Request, res: Response) => {
   const { otp } = req.body;
-  if (!otp) {
-    res.status(400);
-    throw new Error("Please provide OTP");
-  }
+
   console.log(req.session);
   const sessionData = req.session!;
 
@@ -100,7 +85,7 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
 // @route   USER /resend-otp
 // @access  Public
 
-export const resendOtp = asyncHandler(async (req: Request, res: Response) => {
+export const resendOtpController = asyncHandler(async (req: Request, res: Response) => {
   const { email } = req.body;
   console.log(email);
   const otp = speakeasy.totp({
@@ -127,20 +112,11 @@ export const resendOtp = asyncHandler(async (req: Request, res: Response) => {
 // @route   USER /login
 // @access  Public
 
-export const loginUser = asyncHandler(async (req: Request, res: Response) => {
+export const loginUserController = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  if (!email.trim() || !password.trim()) {
-    res.status(400);
-    throw new Error("Please add fields");
-  }
+
   const user = await User.findOne({ email });
 
-  if (user) {
-    if (user.isBlocked) {
-      res.status(400);
-      throw new Error("User is blocked");
-    }
-  }
 
   if (user && (await bcrypt.compare(password, user.password))) {
     res.json({
@@ -153,6 +129,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
       bio: user.bio,
       phone: user.phone,
       isPrivate: user.isPrivate,
+      isVerified:user.isVerified,
       token: generateToken(user.id),
     });
   } else {
@@ -165,7 +142,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 // @route   USER /google-auth
 // @access  Public
 
-export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
+export const googleAuthController = asyncHandler(async (req: Request, res: Response) => {
   const { username, email, imageUrl } = req.body;
 
   try {
@@ -188,6 +165,7 @@ export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
           bio: userExist.bio,
           phone: userExist.phone,
           isPrivate: userExist.isPrivate,
+          isVerified:userExist.isVerified,
           token: generateToken(userExist.id),
         });
         return;
@@ -226,6 +204,8 @@ export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
       bio: newUser.bio,
       phone: newUser.phone,
       isPrivate: newUser.isPrivate,
+      isVerified:newUser.isVerified,
+
       token: token,
     });
   } catch (error) {
@@ -238,7 +218,7 @@ export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
 // @route   USER /forgot-password
 // @access  Public
 
-export const forgotPassword = asyncHandler(
+export const forgotPasswordController = asyncHandler(
   async (req: Request, res: Response) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
@@ -273,7 +253,7 @@ export const forgotPassword = asyncHandler(
 // @route   USER /forgot-otp
 // @access  Public
 
-export const forgotOtp = asyncHandler(async (req: Request, res: Response) => {
+export const forgotOtpController = asyncHandler(async (req: Request, res: Response) => {
   const { otp } = req.body;
   if (!otp) {
     res.status(400);
@@ -308,7 +288,7 @@ export const forgotOtp = asyncHandler(async (req: Request, res: Response) => {
 // @route   USER /reset-passwordt
 // @access  Public
 
-export const resetPassword = asyncHandler(
+export const resetPasswordController = asyncHandler(
   async (req: Request, res: Response) => {
     const { password, confirmPassword } = req.body;
     const sessionData = req.session;
@@ -341,7 +321,7 @@ export const resetPassword = asyncHandler(
 // @route   User /get-hashtags
 // @access  Public
 
-export const getHashtags = asyncHandler(async (req: Request, res: Response) => {
+export const getHashtagsController = asyncHandler(async (req: Request, res: Response) => {
   const hashtags = await Hashtag.find({ isBlocked: false }).sort({ date: -1 });
   console.log("got request");
   if (hashtags) {
@@ -356,7 +336,7 @@ export const getHashtags = asyncHandler(async (req: Request, res: Response) => {
 // @route   User /get-hashtags
 // @access  Public
 
-export const getUserDetails = asyncHandler(
+export const getUserDetailsController = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId } = req.params;
     console.log(userId + "hello");
@@ -376,14 +356,14 @@ export const getUserDetails = asyncHandler(
 // @route   User /edit-profile
 // @access  Public
 
-export const editProfile = asyncHandler(async (req: Request, res: Response) => {
+export const editProfileController = asyncHandler(async (req: Request, res: Response) => {
   const { userId,image, name, phone, bio, gender, isPrivate } = req.body;
   const user = await User.findById(userId);
   console.log(userId,image, name, phone, bio, gender, isPrivate);
 
   if (!user) {
     res.status(400);
-    throw new Error("Post cannot be found");
+    throw new Error("User cannot be found");
   }
 
   if (name) user.userName = name;
@@ -404,11 +384,14 @@ export const editProfile = asyncHandler(async (req: Request, res: Response) => {
     bio: user.bio,
     phone: user.phone,
     isPrivate: user.isPrivate,
+    isVerified:user.isVerified,
     token: generateToken(user.id),
   });
 });
 
-export const userSuggestions = asyncHandler(
+
+
+export const userSuggestionsController = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId } = req.body;
 

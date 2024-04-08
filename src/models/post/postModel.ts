@@ -1,6 +1,5 @@
 import {Schema, model } from "mongoose";
 import PostInterface from "./postTypes";
-import { string } from "yup";
 
 const PostSchema = new Schema<PostInterface>({
     userId: {

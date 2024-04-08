@@ -2,6 +2,8 @@ import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import Conversation from "../models/Conversations/ConversationsModel";
 import Message from "../models/Messages/MessagesModel";
+import Connections from "../models/connections/connectionModel";
+import User from "../models/user/userModel";
 
 // @desc    Adda new conversation
 // @route   get /chat/add-conversation
@@ -33,7 +35,7 @@ export const getUserConversationController = asyncHandler(
         members: { $in: [req.params.userId] },
       }).populate({
         path: 'members',
-        select: 'userName profileImg'
+        select: 'userName profileImg isVerified'
       });
       res.status(200).json(conversation);
     } catch (err) {
@@ -87,7 +89,7 @@ export const getMessagesController = asyncHandler(async (req: Request, res: Resp
       conversationId: req.params.conversationId,
     }).populate({
         path: 'sender',
-        select: 'userName profileImg'
+        select: 'userName profileImg isVerified'
     });
    
     res.status(200).json(messages);
@@ -95,3 +97,24 @@ export const getMessagesController = asyncHandler(async (req: Request, res: Resp
     res.status(500).json(err);
   }
 });
+
+
+
+export const getEligibleUsersController  = asyncHandler(async (req: Request, res: Response) => {
+  try {
+    const {userId}  = req.body;
+    const connections = await Connections.findOne({userId},{following:1});
+    const followingUsers = connections?.following;
+    const users = await User.find({
+      $or: [
+        { isPrivate: false },
+        { _id: { $in: followingUsers } } 
+      ]
+    });
+    res.status(200).json({users})
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+

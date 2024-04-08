@@ -20,6 +20,7 @@
     "@types/nodemailer": "^6.4.14",
     "@types/otp-generator": "^4.0.2",
     "@types/speakeasy": "^2.0.10",
+    "@types/stripe": "^8.0.417",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -30,7 +31,8 @@
     "nodemailer": "^6.9.12",
     "otp-generator": "^4.0.1",
     "socket.io": "^4.7.5",
-    "speakeasy": "^2.0.0"
+    "speakeasy": "^2.0.0",
+    "stripe": "^14.24.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

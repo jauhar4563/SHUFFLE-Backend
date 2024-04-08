@@ -7,6 +7,10 @@ const ConversationSchema = new Schema<ConversationDocument>(
         type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
       required: true,
     },
+    isGroup:{
+      type:Boolean,
+      default:false
+    }
   },
   { timestamps: true }
 );
