@@ -31,7 +31,7 @@ export const initiatecheckoutController = asyncHandler(
         });
       }
 
-      const fare = "249";
+      const fare = "499";
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: [
@@ -39,7 +39,7 @@ export const initiatecheckoutController = asyncHandler(
             price_data: {
               currency: "inr",
               product_data: {
-                name: "CircleUp premium membership - 1mo",
+                name: "Shuffle premium membership - 1Year",
               },
               unit_amount: parseInt(fare) * 100,
             },
@@ -73,7 +73,7 @@ export const validatePaymentController = async (
   res: Response
 ) => {
   const { sessionId, userId } = req.body;
-  const amount = "249";
+  const amount = "499";
 
   try {
     const user = await User.findById(userId);
@@ -99,7 +99,7 @@ export const validatePaymentController = async (
 
     if (session && session.payment_status === "paid") {
       const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + 28);
+      expiryDate.setDate(expiryDate.getDate() + 364);
 
       const newPremium = new Transactions({
         userId,
@@ -111,7 +111,7 @@ export const validatePaymentController = async (
 
       await newPremium.save();
 
-      await User.findByIdAndUpdate(userId, { isVerified: true });
+      await User.findByIdAndUpdate(userId, { isVerified: true, premiumExpiryDate:expiryDate});
       const updatedUser = await User.findById(userId, { password: 0 });
 
       return res.json({

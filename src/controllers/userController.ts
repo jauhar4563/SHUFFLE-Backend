@@ -323,7 +323,6 @@ export const resetPasswordController = asyncHandler(
 
 export const getHashtagsController = asyncHandler(async (req: Request, res: Response) => {
   const hashtags = await Hashtag.find({ isBlocked: false }).sort({ date: -1 });
-  console.log("got request");
   if (hashtags) {
     res.status(200).json({ hashtags });
   } else {
@@ -339,10 +338,8 @@ export const getHashtagsController = asyncHandler(async (req: Request, res: Resp
 export const getUserDetailsController = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId } = req.params;
-    console.log(userId + "hello");
     const user = await User.findById(userId);
     const connections = await Connections.findOne({ userId });
-    console.log("got request");
     if (user) {
       res.status(200).json({ user, connections });
     } else {
@@ -407,7 +404,6 @@ export const userSuggestionsController = asyncHandler(
     const suggestedUsers = await User.find({
       _id: { $nin: [...followingIds, ...requestedIds, userId] },
     }).limit(5);
-    console.log(suggestedUsers)
     res
       .status(200)
       .json({  suggestedUsers });

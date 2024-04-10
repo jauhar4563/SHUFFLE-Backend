@@ -9,6 +9,7 @@ import GroupMessages from "../models/GroupMessages/GroupMessegesSchema";
 
 
 
+
 // @desc    Add a new conversation
 // @route   get /chat/add-conversation
 // @access  Public
@@ -49,13 +50,15 @@ export const addGroupController = asyncHandler(
 export const getGroupsController = asyncHandler(
     async (req: Request, res: Response) => {
       try {
-  
+        console.log(req.params.userId+"groups")
         const groups = await GroupChat.find({
+          $or: [
+            {members:{$in:[req.params.userId]}},
+          {admins: { $in: [req.params.userId] }}]
         }).populate({
           path: 'members',
           select: 'userName profileImg isVerified'
         });
-        console.log(groups)
         res.status(200).json(groups);
       } catch (err) {
         res.status(500).json(err);

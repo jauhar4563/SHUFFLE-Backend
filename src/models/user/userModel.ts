@@ -51,6 +51,7 @@ const userSchema: Schema = new Schema<user>({
         type:Boolean,
         default:false
     },
+    premiumExpiryDate:{type:Date},
     isPrivate: {
         type: Boolean,
         default: false

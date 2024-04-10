@@ -18,7 +18,6 @@ const socketIo_Config = (io: any) => {
     };
 
     const getUser = (userId: string) => {
-      console.log(users);
       return users.find((user) => user.userId === userId);
     };
 
@@ -41,7 +40,6 @@ const socketIo_Config = (io: any) => {
         text: string;
       }) => {
         const user = getUser(receiverId);
-        console.log(user?.socketId + "   socket Id");
         io.to(user?.socketId).emit("getMessage", {
           senderId,
           text,
@@ -50,55 +48,86 @@ const socketIo_Config = (io: any) => {
     );
 
     // Listen for "typing" event from client
-    socket.on("typing", ({ senderId, recieverId }:{senderId:string,recieverId:string}) => {
-      const user = getUser(recieverId);
-      if (user) {
-        io.to(user.socketId).emit("userTyping", { senderId });
+    socket.on(
+      "typing",
+      ({ senderId, recieverId }: { senderId: string; recieverId: string }) => {
+        const user = getUser(recieverId);
+        if (user) {
+          io.to(user.socketId).emit("userTyping", { senderId });
+        }
       }
-    });
+    );
 
     // Listen for "stopTyping" event from client
-    socket.on("stopTyping", ({ senderId, recieverId }:{senderId:string,recieverId:string}) => {
-      const user = getUser(recieverId);
-      if (user) {
-        io.to(user.socketId).emit("userStopTyping", { senderId });
+    socket.on(
+      "stopTyping",
+      ({ senderId, recieverId }: { senderId: string; recieverId: string }) => {
+        const user = getUser(recieverId);
+        if (user) {
+          io.to(user.socketId).emit("userStopTyping", { senderId });
+        }
+      }
+    );
+
+    socket.on("joinGroup", (data: any) => {
+      try {
+        const { group_id, userId } = data;
+        socket.join(group_id);
+        console.log("Connected to the group", group_id, "by user", userId);
+        socket
+          .to(group_id)
+          .emit("joinGroupResponse", {
+            message: "Successfully joined the group",
+          });
+      } catch (error) {
+        console.error("Error occurred while joining group:", error);
+      }
+    });
+
+    socket.on("GroupMessage", async (data: any) => {
+      const { group_id, sender_id, content, lastUpdate } = data;
+      const datas = {
+        group_id,
+        sender_id,
+        content,
+        lastUpdate,
+      };
+      if (group_id) {
+        const emitData = {
+          group_id,
+          sender_id,
+          content,
+        };
+        io.to(group_id).emit("responseGroupMessage", emitData);
+      }
+    });
+    socket.on("videoCallRequest", (data: any) => {
+      const emitdata = {
+        roomId: data.roomId,
+        senderName:data.senderName,
+        senderProfile:data.senderProfile
+      };
+      console.log(emitdata)
+      const user = getUser(data.recieverId);
+      if(user){
+        io.to(user.socketId).emit("videoCallResponse", emitdata);
       }
     });
 
 
+    //Group Video Call 
 
+    socket.on("GroupVideoCallRequest",(data:any)=>{
 
-    socket.on("joinGroup", (data:any) => {
-      try {
-          const { group_id, userId } = data;
-          socket.join(group_id);
-          console.log('Connected to the group', group_id, 'by user', userId);
-          socket.to(group_id).emit("joinGroupResponse", { message: "Successfully joined the group" });
-      } catch (error) {
-          console.error('Error occurred while joining group:', error);
-         
+      const emitdata={
+        roomId:data.roomId,
+        groupName:data.groupName,
+        groupProfile:data.groupProfile
       }
-  });
-  
-  socket.on("GroupMessage",async(data:any)=>{
-    const {group_id,sender_id,content,lastUpdate}=data
-    const datas={
-      group_id,
-      sender_id,
-      content,
-      lastUpdate
-    }
-    console.log(datas)
-  if(group_id){
-    const emitData={
-      group_id,
-      sender_id,
-      content
-    }
-    io.to(group_id).emit("responseGroupMessage",emitData)
-  }
-  
-  })
+      
+        io.to(data.groupId).emit("GroupVideoCallResponse",emitdata)
+      })
+      
 
     // When disconnectec
     socket.on("disconnect", () => {
