@@ -100,6 +100,7 @@ export const validatePaymentController = async (
     if (session && session.payment_status === "paid") {
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 364);
+      
 
       const newPremium = new Transactions({
         userId,

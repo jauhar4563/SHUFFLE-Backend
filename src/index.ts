@@ -11,11 +11,14 @@ import adminRoutes from "./routes/adminRoutes";
 import postRoutes from "./routes/postRoutes";
 import connectionRoutes from "./routes/connectionRoutes";
 import ChatRoutes from "./routes/chatRoutes";
+import StoryRoutes from './routes/storyRoutes';
 import cors from "cors";
 import errorHandler from "./middlewares/errorMiddleware";
 import { Server, Socket } from 'socket.io';
 import socketIo_Config from './utils/socket/socket';
 import http from 'http';
+import runScheduledTask from './utils/scheduledTask';
+
 
 dotenv.config();
 
@@ -74,6 +77,10 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/connection", connectionRoutes);
 app.use("/api/chat", ChatRoutes);
+app.use('/api/story',StoryRoutes);
+
+runScheduledTask();
+
 
 app.use(errorHandler);
 

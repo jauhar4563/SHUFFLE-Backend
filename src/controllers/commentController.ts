@@ -143,7 +143,7 @@ export const getCommentsCount = asyncHandler(
   async (req: Request, res: Response) => {
     const postId = req.params.postId;
 
-    const commentCounts = await Comment.countDocuments({ postId });
+    const commentCounts = await Comment.countDocuments({ postId,isDeleted:false });
     res.status(200).json(commentCounts);
   }
 );

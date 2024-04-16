@@ -60,6 +60,7 @@ export const addPostController = asyncHandler(
 export const getPostController = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId } = req.body;
+    console.log(userId+"postsUser")
     const connections = await Connections.findOne({ userId }, { following: 1 });
     const followingUsers = connections?.following;
     const users = await User.find({
@@ -81,6 +82,7 @@ export const getPostController = asyncHandler(
         select: "userName profileImg isVerified",
       })
       .sort({ date: -1 });
+      
 
     res.status(200).json(posts);
   }
@@ -103,6 +105,7 @@ export const getUserPostController = asyncHandler(
         select: "userName profileImg isVerified",
       })
       .sort({ date: -1 });
+      console.log(posts)
     res.status(200).json(posts);
   }
 );
