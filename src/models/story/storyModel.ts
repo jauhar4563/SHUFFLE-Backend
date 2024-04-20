@@ -16,10 +16,14 @@ const StorySchema = new Schema<StoryInterface>({
       type: Date,
       default: Date.now
     },
+    views:{
+      type:[String],
+      default:[]
+    },
     isDeleted: {
       type: Boolean,
       default: false
-    }
+    },
   }],
 }, { timestamps: true });
 

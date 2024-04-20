@@ -5,6 +5,8 @@ import User from "../models/user/userModel";
 import generateToken from "../utils/generateToken";
 import Connections from "../models/connections/connectionModel";
 import Report from "../models/reports/reportModel";
+import { createNotification } from "../helpers/notificationHelper";
+import Notification from "../models/notifications/notificastionModel";
 
 // @desc    Create new post
 // @route   POST /post/create-post
@@ -22,7 +24,6 @@ export const addPostController = asyncHandler(
       hashtag,
     } = req.body;
     console.log(hashtag);
-
 
     const hashtagsArray = hashtag.map((tag: { value: string }) => tag.value);
     const post = await Post.create({
@@ -60,7 +61,7 @@ export const addPostController = asyncHandler(
 export const getPostController = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId } = req.body;
-    console.log(userId+"postsUser")
+    console.log(userId + "postsUser");
     const connections = await Connections.findOne({ userId }, { following: 1 });
     const followingUsers = connections?.following;
     const users = await User.find({
@@ -82,7 +83,6 @@ export const getPostController = asyncHandler(
         select: "userName profileImg isVerified",
       })
       .sort({ date: -1 });
-      
 
     res.status(200).json(posts);
   }
@@ -105,7 +105,7 @@ export const getUserPostController = asyncHandler(
         select: "userName profileImg isVerified",
       })
       .sort({ date: -1 });
-      console.log(posts)
+    console.log(posts);
     res.status(200).json(posts);
   }
 );
@@ -201,7 +201,22 @@ export const likePostController = asyncHandler(
         { $pull: { likes: userId } },
         { new: true }
       );
+
+      // await Notification.findOneAndDelete({senderId:userId,receiverId:post.userId,message:'liked your post'})
     } else {
+      if (post.userId !== userId) {
+        const notificationData = {
+          senderId: userId,
+          receiverId: post.userId,
+          message: "liked your post",
+          link: `/profile`,
+          read: false,
+          postId: postId,
+        };
+
+        createNotification(notificationData);
+      }
+
       await Post.findOneAndUpdate(
         { _id: postId },
         { $push: { likes: userId } },
@@ -296,34 +311,36 @@ export const getSavedPostController = asyncHandler(
 // @route   POST /post/Report-Post
 // @access  Public
 
-export const reportPostController = asyncHandler(async (req: Request, res: Response) => {
-  const { userId, postId, cause } = req.body;
-  console.log(req.body)
-  const existingReport = await Report.findOne({ userId, postId });
-  if (existingReport) {
-    res.status(400);
-    throw new Error("You have already reported this post.");
+export const reportPostController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { userId, postId, cause } = req.body;
+    console.log(req.body);
+    const existingReport = await Report.findOne({ userId, postId });
+    if (existingReport) {
+      res.status(400);
+      throw new Error("You have already reported this post.");
+    }
+
+    const report = new Report({
+      userId,
+      postId,
+      cause,
+    });
+
+    await report.save();
+
+    const reportCount = await Report.countDocuments({ postId });
+
+    const REPORT_THRESHOLD = 3;
+
+    if (reportCount >= REPORT_THRESHOLD) {
+      await Post.findByIdAndUpdate(postId, { isBlocked: true });
+      res
+        .status(200)
+        .json({ message: "Post has been blocked due to multiple reports." });
+      return;
+    }
+
+    res.status(200).json({ message: "Post has been reported successfully." });
   }
-
-  const report = new Report({
-    userId,
-    postId,
-    cause,
-  });
-
-  await report.save();
-
-  const reportCount = await Report.countDocuments({ postId });
-
-  const REPORT_THRESHOLD = 3;
-
-  if (reportCount >= REPORT_THRESHOLD) {
-    await Post.findByIdAndUpdate(postId, { isBlocked: true });
-    res
-      .status(200)
-      .json({ message: "Post has been blocked due to multiple reports." });
-    return;
-  }
-
-  res.status(200).json({ message: "Post has been reported successfully." });
-});
+);

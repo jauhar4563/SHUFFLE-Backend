@@ -25,7 +25,7 @@ const userSchema: Schema = new Schema<user>({
     },
     profileImg: {
         type: String,
-        default: 'https://cdn-icons-png.flaticon.com/512/1053/1053244.png'
+        default: 'https://as1.ftcdn.net/v2/jpg/03/46/83/96/1000_F_346839683_6nAPzbhpSkIpb8pmAwufkC7c5eD7wYws.jpg'
     },
     bio: {
         type: String,

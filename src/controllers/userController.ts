@@ -403,7 +403,7 @@ export const userSuggestionsController = asyncHandler(
 
     const suggestedUsers = await User.find({
       _id: { $nin: [...followingIds, ...requestedIds, userId] },
-    }).limit(5);
+    }).limit(5).sort({isVerified:-1});
     res
       .status(200)
       .json({  suggestedUsers });

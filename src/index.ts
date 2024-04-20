@@ -18,6 +18,7 @@ import { Server, Socket } from 'socket.io';
 import socketIo_Config from './utils/socket/socket';
 import http from 'http';
 import runScheduledTask from './utils/scheduledTask';
+import path from 'path'
 
 
 dotenv.config();
@@ -42,6 +43,7 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/chat', express.static(path.join(__dirname, 'public', 'chat')));
 
 const sessionSecret = process.env.SESSION_SECRET || "default_secret_key";
 

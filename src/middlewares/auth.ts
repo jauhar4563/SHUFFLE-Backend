@@ -22,6 +22,11 @@ const protect = asyncHandler(
           token,
           process.env.JWT_SECRET as string
         );
+
+        if (decoded.role !== "user") {
+          res.status(401);
+          throw new Error("Not authorized");
+        }
         req.user = await User.findById(decoded.id).select("-password");
 
         if (req.user.isBlocked) {

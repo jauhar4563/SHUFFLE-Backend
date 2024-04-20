@@ -5,6 +5,7 @@ interface StoryInterface extends Document {
   stories: {
     imageUrl: string;
     createdAt?: Date;
+    views:string[];
     isDeleted?: boolean;
   }[];
 }

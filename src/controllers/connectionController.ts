@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import Connections from "../models/connections/connectionModel";
 import User from "../models/user/userModel";
+import { createNotification } from "../helpers/notificationHelper";
 
 
 
@@ -62,6 +63,17 @@ export const followUserController = asyncHandler(async (req: Request, res: Respo
       { $addToSet: { requestSent: followingUser } },
       { upsert: true }
     );
+
+    const notificationData = {
+      senderId:userId,
+      receiverId: followingUser,
+      message: 'requested to Follow',
+      link: `/users-profile/${followingUser}/`, 
+      read: false, 
+   
+    };
+
+    createNotification(notificationData)
   } else {
     await Connections.findOneAndUpdate(
       { userId: followingUser },
@@ -74,6 +86,16 @@ export const followUserController = asyncHandler(async (req: Request, res: Respo
       { upsert: true }
     );
     followed = true;
+    const notificationData = {
+      senderId:userId,
+      receiverId: followingUser,
+      message: 'Started Following you',
+      link: `/visit-profile/posts/`, 
+      read: false, 
+   
+    };
+
+    createNotification(notificationData)
   }
   const followingUserConnections = await Connections.find({
     userId: followingUser,
@@ -128,6 +150,17 @@ export const acceptRequestController = asyncHandler(
       },
       { new: true }
     );
+    const notificationData = {
+      senderId:userId,
+      receiverId: requestedUser ,
+      message: 'accepted your request',
+      link: `/visit-profile/posts/`, 
+      read: false, 
+   
+    };
+
+    createNotification(notificationData)
+    
     const connections = await Connections.findOne({ userId }).populate({
         path: "requested",
         select: "userName profileImg isVerified",

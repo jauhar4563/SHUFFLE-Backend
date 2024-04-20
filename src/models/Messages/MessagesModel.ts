@@ -9,16 +9,30 @@ const MessageSchema = new Schema<MessageDocument>(
     },
     sender: {
       type: Schema.Types.ObjectId,
-        ref: 'User',
+      ref: 'User',
       required: true,
     },
     text: {
       type: String,
       required: true,
     },
+    attachment: {
+      type: {
+        type: String,
+        enum: ['image', 'video', 'file'],
+      },
+      url: String,
+      filename: String,
+      size: Number,
+    },
+    isRead:{
+      type:Boolean,
+      default:false
+    }
   },
   { timestamps: true }
 );
+
 
 const Message = model<MessageDocument>('Message', MessageSchema);
 

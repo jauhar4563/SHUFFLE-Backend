@@ -20,9 +20,13 @@ import {
   userExistValidation,
   userLoginValidation,
 } from "../validations/userValidations";
-import { getPremiumUserDataController, initiatecheckoutController, validatePaymentController } from "../controllers/checkoutController";
+import {
+  getPremiumUserDataController,
+  initiatecheckoutController,
+  validatePaymentController,
+} from "../controllers/checkoutController";
+import { getNotifications } from "../controllers/notificationController";
 const router = express.Router();
-
 
 router.post("/register", registerValidation, registerUserController);
 router.post("/login", userLoginValidation, loginUserController);
@@ -41,9 +45,8 @@ router.post(
   userSuggestionsController
 );
 router.post("/checkout-user", initiatecheckoutController);
-router.post("/validate-payment",validatePaymentController);
-router.post("/get-transactions",getPremiumUserDataController);
-
-
+router.post("/validate-payment", validatePaymentController);
+router.post("/get-transactions", getPremiumUserDataController);
+router.post("/get-notifications", getNotifications);
 
 export default router;

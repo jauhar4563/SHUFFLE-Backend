@@ -23,6 +23,12 @@ const protectAdmin = asyncHandler(
           token,
           process.env.JWT_SECRET as string
         );
+        
+        console.log(decoded.role);
+        if (decoded.role !== "admin") {
+          res.status(401);
+          throw new Error("Not authorized");
+        }
 
         req.admin = await Admin.findById(decoded.id).select("-password");
 

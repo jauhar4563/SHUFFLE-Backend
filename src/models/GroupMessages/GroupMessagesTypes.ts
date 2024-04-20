@@ -5,4 +5,10 @@ export interface IGroupMessage extends Document {
     groupId: Types.ObjectId;
   sender: Types.ObjectId;
   text?: string;
+  attachment: {
+    type: string;
+    url: string;
+    filename: string;
+    size: number;
+  };
 }

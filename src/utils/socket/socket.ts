@@ -34,15 +34,22 @@ const socketIo_Config = (io: any) => {
         senderId,
         receiverId,
         text,
+        messageType,
+        file
       }: {
         senderId: string;
         receiverId: string;
         text: string;
+        messageType:string;
+        file:string;
       }) => {
+        console.log(file)
         const user = getUser(receiverId);
         io.to(user?.socketId).emit("getMessage", {
           senderId,
           text,
+          messageType,
+          file
         });
       }
     );
@@ -85,11 +92,13 @@ const socketIo_Config = (io: any) => {
     });
 
     socket.on("GroupMessage", async (data: any) => {
-      const { group_id, sender_id, content, lastUpdate } = data;
+      const { group_id, sender_id, content,  messageType,file, lastUpdate } = data;
       const datas = {
         group_id,
         sender_id,
         content,
+        messageType,
+        file,
         lastUpdate,
       };
       if (group_id) {
@@ -97,6 +106,8 @@ const socketIo_Config = (io: any) => {
           group_id,
           sender_id,
           content,
+          messageType,
+          file
         };
         io.to(group_id).emit("responseGroupMessage", emitData);
       }

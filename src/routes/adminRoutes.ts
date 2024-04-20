@@ -2,6 +2,8 @@ import express from "express";
 import {
   LoginController,
   addHashtagsController,
+  chartDataController,
+  dashboardStatsController,
   getHashtagsController,
   getPostController,
   getPostReports,
@@ -25,5 +27,7 @@ router.patch("/edit-hashtag", hashtagEditController);
 router.get('/get-posts',protectAdmin,getPostController);
 router.put('/post-block',protectAdmin,postBlockController);
 router.get('/get-reports',protectAdmin,getPostReports);
+router.get('/chart-data',protectAdmin,chartDataController);
+router.get('/dashboard-stats',protectAdmin,dashboardStatsController);
 
 export default router;

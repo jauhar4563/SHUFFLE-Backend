@@ -6,7 +6,8 @@ import Post from "../models/post/postModel";
 import Hashtag from "../models/hashtag/hashtagModel";
 import asyncHandler from "express-async-handler";
 import Report from "../models/reports/reportModel";
-
+import generateAdminToken from "../utils/generateAdminToken";
+import Transactions from "../models/transactions/transactionModel";
 
 interface PaginationMeta {
   next?: {
@@ -23,262 +24,276 @@ interface PaginationMeta {
 // @route   ADMIN /Admin/login
 // @access  Public
 
-export const LoginController = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  const admin = await Admin.findOne({ email });
+export const LoginController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+    const admin = await Admin.findOne({ email });
 
-  if (admin && password === admin.password) {
-    res.json({
-      message: "Authorisation Successful.",
-      _id: admin.id,
-      name: admin.name,
-      email: admin.email,
-      profileImg: admin.profileImg,
-      token: generateToken(admin.id),
-    });
-  } else {
-    res.status(400);
-    throw new Error("Invalid Credentials");
+    if (admin && password === admin.password) {
+      res.json({
+        message: "Authorisation Successful.",
+        _id: admin.id,
+        name: admin.name,
+        email: admin.email,
+        profileImg: admin.profileImg,
+        token: generateAdminToken(admin.id),
+      });
+    } else {
+      res.status(400);
+      throw new Error("Invalid Credentials");
+    }
   }
-});
+);
 
 // @desc    Get all users with pagination
 // @route   ADMIN /admin/get-users
 // @access  Public
 
-export const getUsersController = asyncHandler(async (req: Request, res: Response) => {
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
+export const getUsersController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
 
-  const startIndex = (page - 1) * limit;
-  const endIndex = page * limit;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
 
-  const totalUsers = await User.countDocuments({});
+    const totalUsers = await User.countDocuments({});
 
-  const users = await User.find({})
-    .sort({ date: -1 })
-    .limit(limit)
-    .skip(startIndex);
+    const users = await User.find({})
+      .sort({ date: -1 })
+      .limit(limit)
+      .skip(startIndex);
 
-  const pagination: PaginationMeta = {};
+    const pagination: PaginationMeta = {};
 
-  if (endIndex < totalUsers) {
-    pagination.next = {
-      page: page + 1,
-      limit: limit,
-    };
+    if (endIndex < totalUsers) {
+      pagination.next = {
+        page: page + 1,
+        limit: limit,
+      };
+    }
+
+    if (startIndex > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit: limit,
+      };
+    }
+
+    if (users) {
+      res.status(200).json({ users, pagination, totalUsers });
+    } else {
+      res.status(404);
+      throw new Error("Users Not Found");
+    }
   }
-
-  if (startIndex > 0) {
-    pagination.prev = {
-      page: page - 1,
-      limit: limit,
-    };
-  }
-
-  if (users) {
-    res.status(200).json({ users, pagination, totalUsers });
-  } else {
-    res.status(404);
-    throw new Error("Users Not Found");
-  }
-});
+);
 
 // @desc    Get all users
 // @route   ADMIN /admin/get-users
 // @access  Public
 
-export const getPostController = asyncHandler(async (req: Request, res: Response) => {
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
-  console.log(page, limit);
-  const startIndex = (page - 1) * limit;
-  const endIndex = page * limit;
-  const totalPosts = await Post.countDocuments({isBlocked:true});
+export const getPostController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    console.log(page, limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const totalPosts = await Post.countDocuments({ isBlocked: true });
 
-  const posts = await Post.find({isBlocked:true})
-    .populate({
-      path: "userId",
-      select: "userName profileImg isVerified",
-    })
-    .sort({ date: -1 })
-    .limit(limit)
-    .skip(startIndex);
-  const pagination: PaginationMeta = {};
+    const posts = await Post.find({ isBlocked: true })
+      .populate({
+        path: "userId",
+        select: "userName profileImg isVerified",
+      })
+      .sort({ date: -1 })
+      .limit(limit)
+      .skip(startIndex);
+    const pagination: PaginationMeta = {};
 
-  if (endIndex < totalPosts) {
-    pagination.next = {
-      page: page + 1,
-      limit: limit,
-    };
+    if (endIndex < totalPosts) {
+      pagination.next = {
+        page: page + 1,
+        limit: limit,
+      };
+    }
+
+    if (startIndex > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit: limit,
+      };
+    }
+
+    if (posts) {
+      res.status(200).json({ posts, pagination, totalPosts });
+    } else {
+      res.status(404);
+      throw new Error(" No Post Found");
+    }
   }
-
-  if (startIndex > 0) {
-    pagination.prev = {
-      page: page - 1,
-      limit: limit,
-    };
-  }
-
-  if (posts) {
-    res.status(200).json({ posts, pagination, totalPosts });
-  } else {
-    res.status(404);
-    throw new Error(" No Post Found");
-  }
-});
-
-
+);
 
 // @desc    Get all reports
 // @route   ADMIN /admin/get-reports
 // @access  Public
 
+export const getPostReports = asyncHandler(
+  async (req: Request, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const totalReports = await Report.countDocuments({});
 
-export const getPostReports = asyncHandler(async (req: Request, res: Response) => {
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
-  const startIndex = (page - 1) * limit;
-  const endIndex = page * limit;
-  const totalReports = await Report.countDocuments({});
+    const reports = await Report.find({})
+      .populate({
+        path: "userId",
+        select: "userName profileImg isVerified",
+      })
+      .populate("postId")
+      .sort({ date: -1 })
+      .limit(limit)
+      .skip(startIndex);
 
-  const reports = await Report.find({})
-    .populate({
-      path: "userId",
-      select: "userName profileImg isVerified",
-    }).
-    populate("postId")
-    .sort({ date: -1 })
-    .limit(limit)
-    .skip(startIndex);
+    const pagination: PaginationMeta = {};
 
-  const pagination: PaginationMeta = {};
+    if (endIndex < totalReports) {
+      pagination.next = {
+        page: page + 1,
+        limit: limit,
+      };
+    }
 
-  if (endIndex < totalReports) {
-    pagination.next = {
-      page: page + 1,
-      limit: limit,
-    };
+    if (startIndex > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit: limit,
+      };
+    }
+
+    if (reports) {
+      res.status(200).json({ reports, pagination, totalReports });
+    } else {
+      res.status(404);
+      throw new Error(" No Post Found");
+    }
   }
-
-  if (startIndex > 0) {
-    pagination.prev = {
-      page: page - 1,
-      limit: limit,
-    };
-  }
-
-  if (reports) {
-    res.status(200).json({ reports, pagination, totalReports });
-  } else {
-    res.status(404);
-    throw new Error(" No Post Found");
-  }
-});
-
+);
 
 // @desc    Block Post
 // @route   ADMIN /admin/block-post
 // @access  Public
 
-export const postBlockController = asyncHandler(async (req: Request, res: Response) => {
-  const postId = req.body.postId;
-  console.log(req.body + "put");
-  const post = await Post.findById(postId);
+export const postBlockController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const postId = req.body.postId;
+    console.log(req.body + "put");
+    const post = await Post.findById(postId);
 
-  if (!post) {
-    res.status(400);
-    throw new Error("User not found");
+    if (!post) {
+      res.status(400);
+      throw new Error("User not found");
+    }
+
+    post.isBlocked = !post.isBlocked;
+    await post.save();
+
+    const posts = await Post.find({}).sort({ date: -1 });
+    const blocked = post.isBlocked ? "Blocked" : "Unblocked";
+    console.log("block post");
+    res
+      .status(200)
+      .json({ posts, message: `You have ${blocked} ${post.title}` });
   }
-
-  post.isBlocked = !post.isBlocked;
-  await post.save();
-
-  const posts = await Post.find({}).sort({ date: -1 });
-  const blocked = post.isBlocked ? "Blocked" : "Unblocked";
-  console.log('block post')
-  res.status(200).json({ posts, message: `You have ${blocked} ${post.title}` });
-});
+);
 
 // @desc    Block Users
 // @route   ADMIN /admin/block-user
 // @access  Public
 
-export const userBlockController = asyncHandler(async (req: Request, res: Response) => {
-  const userId = req.body.userId;
-  console.log(req.body);
-  const user = await User.findById(userId);
+export const userBlockController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+    console.log(req.body);
+    const user = await User.findById(userId);
 
-  if (!user) {
-    res.status(400);
-    throw new Error("User not found");
+    if (!user) {
+      res.status(400);
+      throw new Error("User not found");
+    }
+
+    user.isBlocked = !user.isBlocked;
+    await user.save();
+
+    const users = await User.find({}).sort({ date: -1 });
+    const blocked = user.isBlocked ? "Blocked" : "Unblocked";
+    res
+      .status(200)
+      .json({ users, message: `You have ${blocked} ${user.userName}` });
   }
-
-  user.isBlocked = !user.isBlocked;
-  await user.save();
-
-  const users = await User.find({}).sort({ date: -1 });
-  const blocked = user.isBlocked ? "Blocked" : "Unblocked";
-  res
-    .status(200)
-    .json({ users, message: `You have ${blocked} ${user.userName}` });
-});
+);
 
 // @desc    Get all hashtags
 // @route   ADMIN /admin/get-users
 // @access  Public
 
-export const addHashtagsController = asyncHandler(async (req: Request, res: Response) => {
-  const { hashtag } = req.body;
-  const existingHashtags = await Hashtag.find({ hashtag });
-  if (existingHashtags.length > 0) {
-    res.status(404);
-    throw new Error("Hashtag Already Exist");
-  } else {
-    await Hashtag.create({ hashtag });
+export const addHashtagsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { hashtag } = req.body;
+    const existingHashtags = await Hashtag.find({ hashtag });
+    if (existingHashtags.length > 0) {
+      res.status(404);
+      throw new Error("Hashtag Already Exist");
+    } else {
+      await Hashtag.create({ hashtag });
 
-    const allTags = await Hashtag.find({}).sort({ date: -1 });
-    res.status(200).json({ message: "Hashtag added", hashtags: allTags });
+      const allTags = await Hashtag.find({}).sort({ date: -1 });
+      res.status(200).json({ message: "Hashtag added", hashtags: allTags });
+    }
   }
-});
+);
 
 // @desc    Get all hashtags
 // @route   ADMIN /admin/get-users
 // @access  Public
 
-export const getHashtagsController = asyncHandler(async (req: Request, res: Response) => {
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
-  console.log(page, limit);
-  const startIndex = (page - 1) * limit;
-  const endIndex = page * limit;
-  const totalHashtags = await Hashtag.countDocuments({});
-  const hashtags = await Hashtag.find({})
-    .sort({ date: -1 })
-    .limit(limit)
-    .skip(startIndex);
-  const pagination: PaginationMeta = {};
-  if (endIndex < totalHashtags) {
-    pagination.next = {
-      page: page + 1,
-      limit: limit,
-    };
-  }
+export const getHashtagsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    console.log(page, limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const totalHashtags = await Hashtag.countDocuments({});
+    const hashtags = await Hashtag.find({})
+      .sort({ date: -1 })
+      .limit(limit)
+      .skip(startIndex);
+    const pagination: PaginationMeta = {};
+    if (endIndex < totalHashtags) {
+      pagination.next = {
+        page: page + 1,
+        limit: limit,
+      };
+    }
 
-  if (startIndex > 0) {
-    pagination.prev = {
-      page: page - 1,
-      limit: limit,
-    };
-  }
+    if (startIndex > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit: limit,
+      };
+    }
 
-  if (hashtags) {
-    res.status(200).json({ hashtags, pagination, totalHashtags });
-  } else {
-    res.status(404);
-    throw new Error(" No Hashtags Found");
+    if (hashtags) {
+      res.status(200).json({ hashtags, pagination, totalHashtags });
+    } else {
+      res.status(404);
+      throw new Error(" No Hashtags Found");
+    }
   }
-});
+);
 
 // @desc    Block Hashtag
 // @route   ADMIN /admin/block-hashtag
@@ -310,19 +325,74 @@ export const hashtagBlockController = asyncHandler(
 // @route   ADMIN /admin/edit-hashtag
 // @access  Public
 
-export const hashtagEditController = asyncHandler(async (req: Request, res: Response) => {
-  const { hashtagId, hashtag } = req.body;
-  console.log(req.body);
-  const ExistingTag = await Hashtag.findById(hashtagId);
+export const hashtagEditController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { hashtagId, hashtag } = req.body;
+    console.log(req.body);
+    const ExistingTag = await Hashtag.findById(hashtagId);
 
-  if (!ExistingTag) {
-    res.status(400);
-    throw new Error("Hashtag not found");
+    if (!ExistingTag) {
+      res.status(400);
+      throw new Error("Hashtag not found");
+    }
+
+    ExistingTag.hashtag = hashtag;
+    await hashtag.save();
+
+    const hashtags = await Hashtag.find({}).sort({ date: -1 });
+    res.status(200).json({ hashtags, message: `You have Edited hashtag` });
   }
+);
 
-  ExistingTag.hashtag = hashtag;
-  await hashtag.save();
+// @desc    Chart Data
+// @route   ADMIN /admin/chart-data
+// @access  Public
 
-  const hashtags = await Hashtag.find({}).sort({ date: -1 });
-  res.status(200).json({ hashtags, message: `You have Edited hashtag` });
-});
+export const chartDataController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userJoinStats = await User.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+          userCount: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+    console.log(userJoinStats);
+
+    res.json(userJoinStats);
+  }
+);
+
+// @desc    Dashboard Stats
+// @route   ADMIN /admin/dashboard-stats
+// @access  Public
+
+export const dashboardStatsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const totalUsers = await User.countDocuments();
+
+    const totalPosts = await Post.countDocuments();
+
+    const blockedPosts = await Post.countDocuments({ isBlocked: true });
+
+    const totalSales = await Transactions.countDocuments();
+
+    const totalHashtags = await Hashtag.countDocuments();
+    const totalReports = await Report.countDocuments();
+    const stats = {
+      totalUsers,
+      totalPosts,
+      blockedPosts,
+      totalSales,
+      totalHashtags,
+      totalReports
+    };
+
+    // Send the response
+    res.status(200).json(stats);
+  }
+);

@@ -11,9 +11,8 @@ import User from "../models/user/userModel";
 
 export const addConversationController = asyncHandler(
   async (req: Request, res: Response) => {
-    
     console.log(req.body);
-    const {senderId, receiverId} = req.body;
+    const { senderId, receiverId } = req.body;
     const existConversation = await Conversation.findOne({
       members: { $all: [senderId, receiverId] },
     }).populate({
@@ -53,17 +52,25 @@ export const getUserConversationController = asyncHandler(
     try {
       const conversations = await Conversation.find({
         members: { $in: [req.params.userId] },
-      }).populate({
-        path: "members",
-        select: "userName profileImg isVerified",
-      });
+      })
+        .populate({
+          path: "members",
+          select: "userName profileImg isVerified",
+        })
+        .sort({ updatedAt: -1 });
 
-      const conversationsWithMessages = await Promise.all(conversations.map(async conversation => {
-        const messagesCount = await Message.countDocuments({ conversationId: conversation._id });
-        return messagesCount > 0 ? conversation : null;
-      }));
+      const conversationsWithMessages = await Promise.all(
+        conversations.map(async (conversation) => {
+          const messagesCount = await Message.countDocuments({
+            conversationId: conversation._id,
+          });
+          return messagesCount > 0 ? conversation : null;
+        })
+      );
 
-      const filteredConversations = conversationsWithMessages.filter(conversation => conversation !== null);
+      const filteredConversations = conversationsWithMessages.filter(
+        (conversation) => conversation !== null
+      );
 
       res.status(200).json(filteredConversations);
     } catch (err) {
@@ -71,7 +78,6 @@ export const getUserConversationController = asyncHandler(
     }
   }
 );
-
 
 // @desc    Get conversations of two users
 // @route   get /chat/get-conversation
@@ -96,7 +102,33 @@ export const findConversationController = asyncHandler(
 
 export const addMessageController = asyncHandler(
   async (req: Request, res: Response) => {
-    const newMessage = new Message(req.body);
+    console.log("message sending");
+    console.log(req.body);
+    const { conversationId, sender, text } = req.body;
+    let content = text;
+    let attachment = null;
+    console.log(req.file);
+    if (req.file) {
+      attachment = {
+        type: req.file.mimetype.startsWith("image/") ? "image" : "video",
+        url: req.file.path,
+        filename: req.file.filename,
+        size: req.file.size,
+      };
+      content = req.body.messageType;
+    }
+
+    const newMessage = new Message({
+      conversationId,
+      sender,
+      text: content,
+      attachment,
+    });
+    await Conversation.findByIdAndUpdate(
+      conversationId,
+      { updatedAt: Date.now() },
+      { new: true }
+    );
 
     try {
       const savedMessage = await newMessage.save();
@@ -143,6 +175,61 @@ export const getEligibleUsersController = asyncHandler(
         $or: [{ isPrivate: false }, { _id: { $in: followingUsers } }],
       });
       res.status(200).json({ users });
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  }
+);
+
+export const getLastMessages = asyncHandler(
+  async (req: Request, res: Response) => {
+    try {
+      const pipeline: any[] = [
+        {
+          $sort: { createdAt: -1 },
+        },
+        {
+          $group: {
+            _id: "$conversationId",
+            lastMessage: { $first: "$$ROOT" },
+          },
+        },
+        {
+          $replaceRoot: { newRoot: "$lastMessage" },
+        },
+      ];
+
+      const lastMessages = await Message.aggregate(pipeline);
+      res.status(200).json(lastMessages);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  }
+);
+
+
+export const setMessageReadController = asyncHandler(
+  async (req: Request, res: Response) => {
+    try {
+      const { conversationId,userId } = req.body;
+      console.log(conversationId,userId+"Reading Messages")
+      const messages = await Message.updateMany({ conversationId: conversationId, sender: { $ne: userId } }, { $set: { isRead: true } });
+      res.status(200).json(messages);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  }
+);
+
+
+export const getUnreadMessages = asyncHandler(
+  async (req: Request, res: Response) => {
+    try {
+      const { conversationId,userId } = req.body;
+      console.log(conversationId,userId+"unreadMessages getting....")
+      const messages = await Message.find({ conversationId: conversationId, sender: { $ne: userId }, isRead: false });
+      console.log(messages)
+      res.status(200).json(messages);
     } catch (err) {
       res.status(500).json(err);
     }
