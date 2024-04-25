@@ -1,0 +1,23 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const adminController_1 = require("../controllers/adminController");
+const adminAuth_1 = require("../middlewares/adminAuth");
+const router = express_1.default.Router();
+router.post("/login", adminController_1.LoginController);
+router.get("/get-users", adminAuth_1.protectAdmin, adminController_1.getUsersController);
+router.put("/user-block", adminAuth_1.protectAdmin, adminController_1.userBlockController);
+router.get("/hashtags", adminAuth_1.protectAdmin, adminController_1.getHashtagsController);
+router.post("/add-hashtag", adminAuth_1.protectAdmin, adminController_1.addHashtagsController);
+router.put("/block-hashtag", adminAuth_1.protectAdmin, adminController_1.hashtagBlockController);
+router.patch("/edit-hashtag", adminController_1.hashtagEditController);
+router.get('/get-posts', adminAuth_1.protectAdmin, adminController_1.getPostController);
+router.put('/post-block', adminAuth_1.protectAdmin, adminController_1.postBlockController);
+router.get('/get-reports', adminAuth_1.protectAdmin, adminController_1.getPostReports);
+router.get('/chart-data', adminAuth_1.protectAdmin, adminController_1.chartDataController);
+router.get('/dashboard-stats', adminAuth_1.protectAdmin, adminController_1.dashboardStatsController);
+router.get('/transactions', adminAuth_1.protectAdmin, adminController_1.getTransactionController);
+exports.default = router;

@@ -12,16 +12,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importDefault(require("mongoose"));
-const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
+exports.createNotification = void 0;
+const notificastionModel_1 = __importDefault(require("../models/notifications/notificastionModel"));
+const createNotification = (args) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const mongoURI = process.env.MONGO_URL;
-        yield mongoose_1.default.connect(mongoURI);
-        console.log("Connected to MongoDB");
+        const { senderId, receiverId, message, link, read = false, postId, } = args;
+        const newNotification = new notificastionModel_1.default({
+            senderId,
+            receiverId,
+            message,
+            link,
+            read,
+            postId,
+        });
+        const savedNotification = yield newNotification.save();
+        return savedNotification;
     }
     catch (error) {
-        console.error(error);
-        process.exit(1);
+        throw new Error('Error creating notification');
     }
 });
-exports.default = connectDB;
+exports.createNotification = createNotification;

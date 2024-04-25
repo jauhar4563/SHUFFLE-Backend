@@ -1,0 +1,26 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const postController_1 = require("../controllers/postController");
+const auth_1 = require("../middlewares/auth");
+const commentController_1 = require("../controllers/commentController");
+const postValidations_1 = require("../validations/postValidations");
+const router = express_1.default.Router();
+router.post("/add-post", postValidations_1.createPostValidation, auth_1.protect, postController_1.addPostController);
+router.post("/get-post", auth_1.protect, postController_1.getPostController);
+router.get("/get-user-post/:userId", auth_1.protect, postController_1.getUserPostController);
+router.put("/edit-post", postValidations_1.postExistValidation, auth_1.protect, postController_1.updatePostController);
+router.delete("/delete-post", postValidations_1.userAndPostExistValidation, auth_1.protect, postController_1.deletePostController);
+router.post("/like-post", postValidations_1.userAndPostExistValidation, auth_1.protect, postController_1.likePostController);
+router.post("/save-post", postValidations_1.userAndPostExistValidation, auth_1.protect, postController_1.savePostController);
+router.get("/user-saved-post/:userId", postController_1.getSavedPostController);
+router.post("/report-post", postValidations_1.reportPostValidation, auth_1.protect, postController_1.reportPostController);
+router.get("/get-post-comments/:postId", auth_1.protect, commentController_1.getCommentsByPostIdController);
+router.post("/add-comment", auth_1.protect, commentController_1.addCommentController);
+router.post("/reply-comment", auth_1.protect, commentController_1.addReplyCommentController);
+router.delete("/delete-post-comment", auth_1.protect, commentController_1.deletePostCommentController);
+router.get("/get-comments-count/:postId", auth_1.protect, commentController_1.getCommentsCount);
+exports.default = router;

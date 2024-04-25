@@ -1,0 +1,28 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const userController_1 = require("../controllers/userController");
+const userValidations_1 = require("../validations/userValidations");
+const checkoutController_1 = require("../controllers/checkoutController");
+const notificationController_1 = require("../controllers/notificationController");
+const router = express_1.default.Router();
+router.post("/register", userValidations_1.registerValidation, userController_1.registerUserController);
+router.post("/login", userValidations_1.userLoginValidation, userController_1.loginUserController);
+router.post("/register-otp", userValidations_1.otpValidation, userController_1.verifyOTPController);
+router.post("/resend-otp", userController_1.resendOtpController);
+router.post("/google-auth", userController_1.googleAuthController);
+router.post("/forgot-password", userController_1.forgotPasswordController);
+router.post("/forgot-otp", userController_1.forgotOtpController);
+router.post("/reset-password", userController_1.resetPasswordController);
+router.get("/get-hashtags", userController_1.getHashtagsController);
+router.get("/user-details/:userId", userController_1.getUserDetailsController);
+router.patch("/edit-profile", userValidations_1.userExistValidation, userController_1.editProfileController);
+router.post("/user-suggestions", userValidations_1.userExistValidation, userController_1.userSuggestionsController);
+router.post("/checkout-user", checkoutController_1.initiatecheckoutController);
+router.post("/validate-payment", checkoutController_1.validatePaymentController);
+router.post("/get-transactions", checkoutController_1.getPremiumUserDataController);
+router.post("/get-notifications", notificationController_1.getNotifications);
+exports.default = router;
