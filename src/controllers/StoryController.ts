@@ -53,7 +53,8 @@ export const getStoriesController = asyncHandler(
         path: "userId",
         select: "userName profileImg isVerified",
       })
-      .sort({ date: -1 });
+      .sort({ userId: -1 })
+      .sort({ createdAt: -1 });
 
     console.log(stories);
     res.status(200).json(stories);

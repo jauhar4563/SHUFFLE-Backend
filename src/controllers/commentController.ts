@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import Comment from "../models/comment/commentModel";
+import { createNotification } from "../helpers/notificationHelper";
+import Post from "../models/post/postModel";
 
 // @desc    Get all comments of a post
 // @route   GET /post/get-comment
@@ -42,6 +44,19 @@ export const addCommentController = asyncHandler(
     });
 
     await newComment.save();
+    const postUploader = await Post.findById(postId);
+    if (postUploader && postUploader.userId !== userId) {
+      const notificationData = {
+        senderId: userId,
+        receiverId: postUploader.userId,
+        message: "Commented on your post",
+        link: `/users-profile/${postUploader.userId}/`,
+        read: false,
+      };
+
+      createNotification(notificationData);
+    }
+
     const comments = await Comment.find({ postId: postId, isDeleted: false })
       .populate({
         path: "userId",
@@ -96,7 +111,6 @@ export const deletePostCommentController = asyncHandler(
 // @route   POST /post/reply-comment
 // @access  Private
 export const addReplyCommentController = asyncHandler(async (req, res) => {
-
   const { commentId, userId, replyComment } = req.body;
 
   const comment = await Comment.findById(commentId);
@@ -114,6 +128,18 @@ export const addReplyCommentController = asyncHandler(async (req, res) => {
 
   comment.replyComments.push(newReplyComment);
   await comment.save();
+  const postUploader = comment.userId;
+  if (postUploader && postUploader !== userId) {
+    const notificationData = {
+      senderId: userId,
+      receiverId: postUploader,
+      message: "Replied to your comment",
+      link: `/users-profile/${postUploader}/`,
+      read: false,
+    };
+
+    createNotification(notificationData);
+  }
 
   const comments = await Comment.find({
     postId: comment.postId,
@@ -137,16 +163,14 @@ export const addReplyCommentController = asyncHandler(async (req, res) => {
 // @route   POST /post/commentsCount
 // @access  Public
 
-
-
 export const getCommentsCount = asyncHandler(
   async (req: Request, res: Response) => {
     const postId = req.params.postId;
 
-    const commentCounts = await Comment.countDocuments({ postId,isDeleted:false });
+    const commentCounts = await Comment.countDocuments({
+      postId,
+      isDeleted: false,
+    });
     res.status(200).json(commentCounts);
   }
 );
-
-
-

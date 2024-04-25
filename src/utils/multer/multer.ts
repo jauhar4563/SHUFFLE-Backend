@@ -12,8 +12,11 @@ const storage = multer.diskStorage({
         dest = 'src/public/chat/videos/';
         console.log(file);
         console.log(dest)
-      } else {
-        // return cb(new Error('Unsupported file type'));
+      } else if(file.mimetype.startsWith('audio/')) {
+        dest = 'src/public/chat/audios/';
+        console.log(file)
+      }else{
+        // console.log(file)
       }
       cb(null, dest);
     },  

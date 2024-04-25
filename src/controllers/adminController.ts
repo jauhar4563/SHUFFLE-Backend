@@ -361,9 +361,25 @@ export const chartDataController = asyncHandler(
         $sort: { _id: 1 },
       },
     ]);
-    console.log(userJoinStats);
 
-    res.json(userJoinStats);
+    const postCreationStats = await Post.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+          postCount: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    const chartData = {
+      userJoinStats,
+      postCreationStats,
+    };
+
+    res.json(chartData);
   }
 );
 
@@ -389,10 +405,58 @@ export const dashboardStatsController = asyncHandler(
       blockedPosts,
       totalSales,
       totalHashtags,
-      totalReports
+      totalReports,
     };
 
     // Send the response
     res.status(200).json(stats);
+  }
+);
+
+
+// @desc    Get all transactions
+// @route   ADMIN /admin/get-transactions
+// @access  Public
+
+export const getTransactionController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    console.log(page, limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const totalTransactions = await Transactions.countDocuments();
+
+    const transactions = await Transactions.find()  
+    .populate({
+      path: "userId",
+      select: "userName profileImg isVerified",
+    })
+      .sort({ startDate: -1 }) 
+      .limit(limit)
+      .skip(startIndex);
+
+    const pagination: PaginationMeta = {};
+
+    if (endIndex < totalTransactions) {
+      pagination.next = {
+        page: page + 1,
+        limit: limit,
+      };
+    }
+
+    if (startIndex > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit: limit,
+      };
+    }
+
+    if (transactions) {
+      res.status(200).json({ transactions, pagination, totalTransactions });
+    } else {
+      res.status(404);
+      throw new Error("No transactions found");
+    }
   }
 );

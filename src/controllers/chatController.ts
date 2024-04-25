@@ -107,10 +107,21 @@ export const addMessageController = asyncHandler(
     const { conversationId, sender, text } = req.body;
     let content = text;
     let attachment = null;
+
     console.log(req.file);
     if (req.file) {
+      let type;
+      if (req.file.mimetype.startsWith("image/")) {
+        type = "image";
+      } else if (req.file.mimetype.startsWith("video/")) {
+        type = "video";
+      } else if (req.file.mimetype.startsWith("audio/")) {
+        type = "audio";
+      } else {
+        type = "file";
+      }
       attachment = {
-        type: req.file.mimetype.startsWith("image/") ? "image" : "video",
+        type: type,
         url: req.file.path,
         filename: req.file.filename,
         size: req.file.size,
@@ -207,13 +218,15 @@ export const getLastMessages = asyncHandler(
   }
 );
 
-
 export const setMessageReadController = asyncHandler(
   async (req: Request, res: Response) => {
     try {
-      const { conversationId,userId } = req.body;
-      console.log(conversationId,userId+"Reading Messages")
-      const messages = await Message.updateMany({ conversationId: conversationId, sender: { $ne: userId } }, { $set: { isRead: true } });
+      const { conversationId, userId } = req.body;
+      console.log(conversationId, userId + "Reading Messages");
+      const messages = await Message.updateMany(
+        { conversationId: conversationId, sender: { $ne: userId } },
+        { $set: { isRead: true } }
+      );
       res.status(200).json(messages);
     } catch (err) {
       res.status(500).json(err);
@@ -221,14 +234,17 @@ export const setMessageReadController = asyncHandler(
   }
 );
 
-
 export const getUnreadMessages = asyncHandler(
   async (req: Request, res: Response) => {
     try {
-      const { conversationId,userId } = req.body;
-      console.log(conversationId,userId+"unreadMessages getting....")
-      const messages = await Message.find({ conversationId: conversationId, sender: { $ne: userId }, isRead: false });
-      console.log(messages)
+      const { conversationId, userId } = req.body;
+      console.log(conversationId, userId + "unreadMessages getting....");
+      const messages = await Message.find({
+        conversationId: conversationId,
+        sender: { $ne: userId },
+        isRead: false,
+      });
+      console.log(messages);
       res.status(200).json(messages);
     } catch (err) {
       res.status(500).json(err);

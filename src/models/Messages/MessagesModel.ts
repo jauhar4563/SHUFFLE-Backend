@@ -19,7 +19,7 @@ const MessageSchema = new Schema<MessageDocument>(
     attachment: {
       type: {
         type: String,
-        enum: ['image', 'video', 'file'],
+        enum: ['image', 'video', 'file','audio'],
       },
       url: String,
       filename: String,

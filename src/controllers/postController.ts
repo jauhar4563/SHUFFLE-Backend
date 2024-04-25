@@ -60,20 +60,41 @@ export const addPostController = asyncHandler(
 
 export const getPostController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = req.body;
+    const { userId, searchTerm } = req.body; 
     console.log(userId + "postsUser");
+    
     const connections = await Connections.findOne({ userId }, { following: 1 });
     const followingUsers = connections?.following;
-    const users = await User.find({
-      $or: [{ isPrivate: false }, { _id: { $in: followingUsers } }],
-    });
+    
+    const usersQuery = searchTerm
+      ? { $or: [{ isPrivate: false }, { _id: { $in: followingUsers } }, { userName: { $regex: searchTerm, $options: "i" } }] }
+      : { $or: [{ isPrivate: false }, { _id: { $in: followingUsers } }] };
+    const users = await User.find(usersQuery);
     const userIds = users.map((user) => user._id);
 
-    const posts = await Post.find({
+    interface PostsQuery {
+      userId: { $in: string[] };
+      isBlocked: boolean;
+      isDeleted: boolean;
+      $or?: { [key: string]: any }[];
+    }
+
+    const postsQuery: PostsQuery = {
       userId: { $in: [...userIds, userId] },
       isBlocked: false,
       isDeleted: false,
-    })
+    };
+
+    if (searchTerm) {
+      const regexArray = searchTerm.split(' ').map((tag:string) => new RegExp(tag, 'i'));
+      postsQuery['$or'] = [
+        { title: { $regex: searchTerm, $options: "i" } },
+        {description:{$regex: searchTerm, $options: "i" }},
+        { hashtags:  { $in: regexArray }  }
+      ];
+    }
+
+    const posts = await Post.find(postsQuery)
       .populate({
         path: "userId",
         select: "userName profileImg isVerified",
@@ -87,6 +108,8 @@ export const getPostController = asyncHandler(
     res.status(200).json(posts);
   }
 );
+
+
 
 // @desc    Get User Posts
 // @route   get /post/get-post

@@ -7,6 +7,7 @@ import {
   getHashtagsController,
   getPostController,
   getPostReports,
+  getTransactionController,
   getUsersController,
   hashtagBlockController,
   hashtagEditController,
@@ -29,5 +30,6 @@ router.put('/post-block',protectAdmin,postBlockController);
 router.get('/get-reports',protectAdmin,getPostReports);
 router.get('/chart-data',protectAdmin,chartDataController);
 router.get('/dashboard-stats',protectAdmin,dashboardStatsController);
+router.get('/transactions',protectAdmin,getTransactionController);
 
 export default router;

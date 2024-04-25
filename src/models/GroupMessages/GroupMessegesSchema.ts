@@ -9,7 +9,7 @@ const messageSchema: Schema<IGroupMessage> = new mongoose.Schema({
   attachment: {
     type: {
       type: String,
-      enum: ['image', 'video', 'file'],
+      enum: ['image', 'video', 'file','audio'],
     },
     url: String,
     filename: String,

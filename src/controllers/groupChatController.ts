@@ -74,8 +74,18 @@ export const addGroupMessageController = asyncHandler(
     let attachment = null;
     console.log(req.file);
     if (req.file) {
+      let type;
+      if (req.file.mimetype.startsWith("image/")) {
+        type = "image";
+      } else if (req.file.mimetype.startsWith("video/")) {
+        type = "video";
+      } else if (req.file.mimetype.startsWith("audio/")) {
+        type = "audio";
+      } else {
+        type = "file";
+      }
       attachment = {
-        type: req.file.mimetype.startsWith("image/") ? "image" : "video",
+        type: type,
         url: req.file.path,
         filename: req.file.filename,
         size: req.file.size,
