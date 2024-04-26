@@ -55,11 +55,7 @@ const socketIo_Config = (io: any) => {
         });
       }
     );
-    socket.on('headerinfo',({
-      message
-    }:{message:string;})=>{
-      console.log(message);
-    })
+
 
     socket.on(
       "sendNotification",
