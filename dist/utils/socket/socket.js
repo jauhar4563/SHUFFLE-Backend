@@ -44,9 +44,6 @@ const socketIo_Config = (io) => {
                 file
             });
         });
-        socket.on('headerinfo', ({ message }) => {
-            console.log(message);
-        });
         socket.on("sendNotification", ({ postImage, receiverId, senderName, message, }) => {
             console.log(message);
             const user = getUser(receiverId);

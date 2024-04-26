@@ -23,7 +23,7 @@ const path_1 = __importDefault(require("path"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
-    origin: "*",
+    origin: "http://localhost:5173",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
 }));
@@ -44,7 +44,7 @@ const port = process.env.PORT || 3000;
 // Create HTTP server
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
-    cors: { origin: "*" },
+    cors: { origin: "http://localhost:5173" },
 });
 // Configure Socket.IO
 (0, socket_1.default)(io);
