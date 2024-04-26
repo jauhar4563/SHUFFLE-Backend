@@ -257,7 +257,6 @@ export const likePostController = asyncHandler(
         select: "userName profileImg isVerified",
       })
       .sort({ date: -1 });
-    console.log(posts);
     res.status(200).json({ posts });
   }
 );

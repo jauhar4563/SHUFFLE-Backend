@@ -17,9 +17,9 @@ router.get("/find-conversation/:firstUserId/:secondUserId", chatController_1.fin
 router.post('/add-message', multer_1.upload.single('file'), chatController_1.addMessageController);
 router.get('/get-messages/:conversationId', chatController_1.getMessagesController);
 router.post('/chat-eligible-users', chatController_1.getEligibleUsersController);
-router.get('/get-last-messages', chatController_1.getLastMessages);
+router.get('/get-last-messages', chatController_1.getLastMessagesController);
 router.patch('/set-message-read', chatController_1.setMessageReadController);
-router.post('/get-unread-messages', chatController_1.getUnreadMessages);
+router.post('/get-unread-messages', chatController_1.getUnreadMessagesController);
 // GroupChat
 router.post('/add-chat-group', groupChatController_1.addGroupController);
 router.get("/get-groups/:userId", groupChatController_1.getGroupsController);

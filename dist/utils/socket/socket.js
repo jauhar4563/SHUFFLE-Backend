@@ -30,6 +30,7 @@ const socketIo_Config = (io) => {
         //when connect
         socket.on("addUser", (userId) => {
             addUser(userId, socket.id);
+            console.log(users);
             io.emit("getUsers", users);
         });
         // send and get message
@@ -41,6 +42,18 @@ const socketIo_Config = (io) => {
                 text,
                 messageType,
                 file
+            });
+        });
+        socket.on('headerinfo', ({ message }) => {
+            console.log(message);
+        });
+        socket.on("sendNotification", ({ postImage, receiverId, senderName, message, }) => {
+            console.log(message);
+            const user = getUser(receiverId);
+            io.to(user === null || user === void 0 ? void 0 : user.socketId).emit("getNotifications", {
+                postImage,
+                senderName,
+                message,
             });
         });
         // Listen for "typing" event from client

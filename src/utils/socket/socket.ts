@@ -24,6 +24,8 @@ const socketIo_Config = (io: any) => {
     //when connect
     socket.on("addUser", (userId: string) => {
       addUser(userId, socket.id);
+      console.log(users);
+      
       io.emit("getUsers", users);
     });
 
@@ -50,6 +52,34 @@ const socketIo_Config = (io: any) => {
           text,
           messageType,
           file
+        });
+      }
+    );
+    socket.on('headerinfo',({
+      message
+    }:{message:string;})=>{
+      console.log(message);
+    })
+
+    socket.on(
+      "sendNotification",
+      ({
+        postImage,
+        receiverId,
+        senderName,
+        message,
+      }: {
+        postImage: string;
+        receiverId: string;
+        senderName: string;
+        message:string;
+      }) => {
+        console.log(message);
+        const user = getUser(receiverId);
+        io.to(user?.socketId).emit("getNotifications", {
+          postImage,
+          senderName,
+          message,
         });
       }
     );

@@ -192,7 +192,7 @@ export const getEligibleUsersController = asyncHandler(
   }
 );
 
-export const getLastMessages = asyncHandler(
+export const getLastMessagesController = asyncHandler(
   async (req: Request, res: Response) => {
     try {
       const pipeline: any[] = [
@@ -234,7 +234,7 @@ export const setMessageReadController = asyncHandler(
   }
 );
 
-export const getUnreadMessages = asyncHandler(
+export const getUnreadMessagesController = asyncHandler(
   async (req: Request, res: Response) => {
     try {
       const { conversationId, userId } = req.body;

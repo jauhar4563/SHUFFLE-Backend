@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readStoryController = exports.getStoriesController = exports.addStoryController = void 0;
+exports.readStoryController = exports.getStoriesController = exports.getUserStory = exports.addStoryController = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const userModel_1 = __importDefault(require("../models/user/userModel"));
 const connectionModel_1 = __importDefault(require("../models/connections/connectionModel"));
@@ -39,12 +39,27 @@ exports.addStoryController = (0, express_async_handler_1.default)((req, res) => 
     });
     res.status(200).json(updatedStory);
 }));
+// @desc    get User story
+// @route   get /Story/get-user-story
+// @access  Public
+exports.getUserStory = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.params.userId;
+    console.log(userId + "userStory");
+    const story = yield storyModel_1.default.findOne({
+        userId: userId
+    })
+        .populate({
+        path: "userId",
+        select: "userName profileImg isVerified",
+    });
+    console.log(story);
+    res.status(200).json(story);
+}));
 // @desc    get all Stories
 // @route   get /Story/get-stories
 // @access  Public
 exports.getStoriesController = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.params.userId;
-    console.log(userId + "Stories User");
     const connections = yield connectionModel_1.default.findOne({ userId }, { following: 1 });
     const followingUsers = connections === null || connections === void 0 ? void 0 : connections.following;
     const users = yield userModel_1.default.find({
@@ -52,15 +67,13 @@ exports.getStoriesController = (0, express_async_handler_1.default)((req, res) =
     });
     const userIds = users.map((user) => user._id);
     const stories = yield storyModel_1.default.find({
-        userId: { $in: [...userIds, userId] },
+        userId: { $in: [...userIds] },
     })
         .populate({
         path: "userId",
         select: "userName profileImg isVerified",
     })
-        .sort({ userId: -1 })
         .sort({ createdAt: -1 });
-    console.log(stories);
     res.status(200).json(stories);
 }));
 // @desc    Read Story

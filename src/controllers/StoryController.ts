@@ -31,6 +31,27 @@ export const addStoryController = asyncHandler(
   }
 );
 
+// @desc    get User story
+// @route   get /Story/get-user-story
+// @access  Public
+
+export const getUserStory = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.params.userId;
+    console.log(userId+"userStory")
+    const story = await Story.findOne({
+      userId:userId
+    })
+      .populate({
+        path: "userId",
+        select: "userName profileImg isVerified",
+      });
+
+    console.log(story);
+    res.status(200).json(story);
+  }
+);
+
 // @desc    get all Stories
 // @route   get /Story/get-stories
 // @access  Public
@@ -38,7 +59,6 @@ export const addStoryController = asyncHandler(
 export const getStoriesController = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.params.userId;
-    console.log(userId + "Stories User");
     const connections = await Connections.findOne({ userId }, { following: 1 });
     const followingUsers = connections?.following;
     const users = await User.find({
@@ -47,16 +67,14 @@ export const getStoriesController = asyncHandler(
     const userIds = users.map((user) => user._id);
 
     const stories = await Story.find({
-      userId: { $in: [...userIds, userId] },
+      userId: { $in: [...userIds] },
     })
       .populate({
         path: "userId",
         select: "userName profileImg isVerified",
       })
-      .sort({ userId: -1 })
       .sort({ createdAt: -1 });
 
-    console.log(stories);
     res.status(200).json(stories);
   }
 );

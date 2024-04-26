@@ -207,7 +207,6 @@ exports.likePostController = (0, express_async_handler_1.default)((req, res) => 
         select: "userName profileImg isVerified",
     })
         .sort({ date: -1 });
-    console.log(posts);
     res.status(200).json({ posts });
 }));
 // @desc    Save Post

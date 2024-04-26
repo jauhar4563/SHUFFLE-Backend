@@ -5,9 +5,9 @@ import {
   addMessageController,
   findConversationController,
   getEligibleUsersController,
-  getLastMessages,
+  getLastMessagesController,
   getMessagesController,
-  getUnreadMessages,
+  getUnreadMessagesController,
   getUserConversationController,
   setMessageReadController,
 } from "../controllers/chatController";
@@ -27,9 +27,9 @@ router.post('/add-message',upload.single('file'),addMessageController);
 router.get('/get-messages/:conversationId',getMessagesController)
 
 router.post('/chat-eligible-users',getEligibleUsersController)
-router.get('/get-last-messages',getLastMessages);
+router.get('/get-last-messages',getLastMessagesController);
 router.patch('/set-message-read',setMessageReadController);
-router.post('/get-unread-messages',getUnreadMessages)
+router.post('/get-unread-messages',getUnreadMessagesController)
 // GroupChat
 
 router.post('/add-chat-group',addGroupController);

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUnreadMessages = exports.setMessageReadController = exports.getLastMessages = exports.getEligibleUsersController = exports.getMessagesController = exports.addMessageController = exports.findConversationController = exports.getUserConversationController = exports.addConversationController = void 0;
+exports.getUnreadMessagesController = exports.setMessageReadController = exports.getLastMessagesController = exports.getEligibleUsersController = exports.getMessagesController = exports.addMessageController = exports.findConversationController = exports.getUserConversationController = exports.addConversationController = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const ConversationsModel_1 = __importDefault(require("../models/Conversations/ConversationsModel"));
 const MessagesModel_1 = __importDefault(require("../models/Messages/MessagesModel"));
@@ -168,7 +168,7 @@ exports.getEligibleUsersController = (0, express_async_handler_1.default)((req, 
         res.status(500).json(err);
     }
 }));
-exports.getLastMessages = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getLastMessagesController = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const pipeline = [
             {
@@ -202,7 +202,7 @@ exports.setMessageReadController = (0, express_async_handler_1.default)((req, re
         res.status(500).json(err);
     }
 }));
-exports.getUnreadMessages = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getUnreadMessagesController = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { conversationId, userId } = req.body;
         console.log(conversationId, userId + "unreadMessages getting....");
