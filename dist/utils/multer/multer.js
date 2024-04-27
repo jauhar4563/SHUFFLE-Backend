@@ -10,17 +10,17 @@ const storage = multer_1.default.diskStorage({
         let dest = '';
         console.log("multer");
         if (file.mimetype.startsWith('image/')) {
-            dest = 'src/public/chat/images/';
+            dest = 'dist/public/chat/images/';
             console.log(file);
             console.log(dest);
         }
         else if (file.mimetype.startsWith('video/')) {
-            dest = 'src/public/chat/videos/';
+            dest = 'dist/public/chat/videos/';
             console.log(file);
             console.log(dest);
         }
         else if (file.mimetype.startsWith('audio/')) {
-            dest = 'src/public/chat/audios/';
+            dest = 'dist/public/chat/audios/';
             console.log(file);
         }
         else {
