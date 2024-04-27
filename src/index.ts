@@ -42,9 +42,9 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/chat", express.static(path.join(__dirname, "public", "chat")));
-// app.use(express.static('public/'))
-app.use('/api/img/',express.static('public/chat/'))
+// app.use("/chat", express.static(path.join(__dirname, "public", "chat")));
+app.use(express.static('public/'))
+app.use('/api/img/',express.static('public/chat/images'))
 
 const sessionSecret = process.env.SESSION_SECRET || "default_secret_key";
 
