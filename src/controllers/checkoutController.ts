@@ -47,7 +47,7 @@ export const initiatecheckoutController = asyncHandler(
           },
         ],
         mode: "payment",
-        success_url: `${process.env.DOMAIN_NAME}/payment-success`,
+        success_url: `${process.env.DOMAIN_NAME}/premium/payment-success`,
         cancel_url: `${process.env.DOMAIN_NAME}/premium/payment-failed`,
         customer_email: user?.email,
         billing_address_collection: "required",
