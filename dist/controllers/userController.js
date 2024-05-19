@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userSuggestionsController = exports.editProfileController = exports.getUserDetailsController = exports.getHashtagsController = exports.resetPasswordController = exports.forgotOtpController = exports.forgotPasswordController = exports.googleAuthController = exports.loginUserController = exports.resendOtpController = exports.verifyOTPController = exports.registerUserController = void 0;
+exports.userSearchController = exports.userSuggestionsController = exports.editProfileController = exports.getUserDetailsController = exports.getHashtagsController = exports.resetPasswordController = exports.forgotOtpController = exports.forgotPasswordController = exports.googleAuthController = exports.loginUserController = exports.resendOtpController = exports.verifyOTPController = exports.registerUserController = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const speakeasy_1 = __importDefault(require("speakeasy"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
@@ -383,4 +383,25 @@ exports.userSuggestionsController = (0, express_async_handler_1.default)((req, r
             .sort({ isVerified: -1 });
     }
     res.status(200).json({ suggestedUsers });
+}));
+exports.userSearchController = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { searchTerm } = req.body;
+    console.log(req.body);
+    let suggestedUsers = [];
+    if (searchTerm) {
+        suggestedUsers = yield userModel_1.default.find({
+            userName: { $regex: searchTerm, $options: "i" },
+            isBlocked: false,
+        })
+            .limit(6)
+            .sort({ isVerified: -1 });
+    }
+    else {
+        suggestedUsers = yield userModel_1.default.find({
+            isBlocked: false,
+        })
+            .limit(6)
+            .sort({ isVerified: -1 });
+    }
+    res.status(200).json(suggestedUsers);
 }));

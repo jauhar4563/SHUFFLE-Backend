@@ -19,18 +19,19 @@ const socket_io_1 = require("socket.io");
 const socket_1 = __importDefault(require("./utils/socket/socket"));
 const http_1 = __importDefault(require("http"));
 const scheduledTask_1 = __importDefault(require("./utils/scheduledTask"));
+const path_1 = __importDefault(require("path"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
-    origin: "https://www.shufle.online",
+    origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
 }));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-// app.use("/chat", express.static(path.join(__dirname, "public", "chat")));
-app.use(express_1.default.static('public/'));
-app.use('/api/chatMedia/', express_1.default.static('public/chat/'));
+app.use("/chat", express_1.default.static(path_1.default.join(__dirname, "public", "chat")));
+// app.use(express.static('public/'))
+// app.use('/api/chatMedia/',express.static('public/chat/'))
 const sessionSecret = process.env.SESSION_SECRET || "default_secret_key";
 app.use((0, express_session_1.default)({
     secret: sessionSecret,
@@ -45,7 +46,7 @@ const port = process.env.PORT || 3000;
 // Create HTTP server
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
-    cors: { origin: "https://www.shufle.online" },
+    cors: { origin: "*" },
 });
 // Configure Socket.IO
 (0, socket_1.default)(io);

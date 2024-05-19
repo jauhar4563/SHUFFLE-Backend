@@ -21,6 +21,7 @@ router.get("/get-hashtags", userController_1.getHashtagsController);
 router.get("/user-details/:userId", userController_1.getUserDetailsController);
 router.patch("/edit-profile", userValidations_1.userExistValidation, userController_1.editProfileController);
 router.post("/user-suggestions", userValidations_1.userExistValidation, userController_1.userSuggestionsController);
+router.post('/user-search', userController_1.userSearchController);
 router.post("/checkout-user", checkoutController_1.initiatecheckoutController);
 router.post("/validate-payment", checkoutController_1.validatePaymentController);
 router.post("/get-transactions", checkoutController_1.getPremiumUserDataController);

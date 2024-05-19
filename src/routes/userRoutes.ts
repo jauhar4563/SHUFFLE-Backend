@@ -12,6 +12,7 @@ import {
   getUserDetailsController,
   editProfileController,
   userSuggestionsController,
+  userSearchController,
 } from "../controllers/userController";
 import { protect } from "../middlewares/auth";
 import {
@@ -44,6 +45,7 @@ router.post(
   userExistValidation,
   userSuggestionsController
 );
+router.post('/user-search',userSearchController);
 router.post("/checkout-user", initiatecheckoutController);
 router.post("/validate-payment", validatePaymentController);
 router.post("/get-transactions", getPremiumUserDataController);

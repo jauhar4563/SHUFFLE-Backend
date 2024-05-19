@@ -35,16 +35,16 @@ declare module "express-session" {
 
 app.use(
   cors({
-    origin: "https://www.shufle.online",
+    origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   })
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// app.use("/chat", express.static(path.join(__dirname, "public", "chat")));
-app.use(express.static('public/'))
-app.use('/api/chatMedia/',express.static('public/chat/'))
+app.use("/chat", express.static(path.join(__dirname, "public", "chat")));
+// app.use(express.static('public/'))
+// app.use('/api/chatMedia/',express.static('public/chat/'))
 
 const sessionSecret = process.env.SESSION_SECRET || "default_secret_key";
 
@@ -66,7 +66,7 @@ const port = process.env.PORT || 3000;
 const server = http.createServer(app);
 
 const io: Server = new Server(server, {
-  cors: { origin: "https://www.shufle.online" },
+  cors: { origin: "*" },
 });
 
 // Configure Socket.IO

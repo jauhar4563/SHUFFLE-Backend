@@ -445,3 +445,30 @@ export const userSuggestionsController = asyncHandler(
     res.status(200).json({ suggestedUsers });
   }
 );
+
+
+export const userSearchController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { searchTerm } = req.body;
+    console.log(req.body)
+    let suggestedUsers =[];
+    if (searchTerm) {
+      suggestedUsers = await User.find({
+        userName: { $regex: searchTerm, $options: "i" },
+        isBlocked: false,
+      })
+        .limit(6)
+        .sort({ isVerified: -1 });
+    } else {
+      suggestedUsers = await User.find({
+        isBlocked: false,
+      })
+        .limit(6)
+        .sort({ isVerified: -1 });
+    }
+
+    res.status(200).json( suggestedUsers );
+  }
+);
+
+
