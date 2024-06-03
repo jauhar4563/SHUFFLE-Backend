@@ -4,6 +4,7 @@ import Conversation from "../models/Conversations/ConversationsModel";
 import Message from "../models/Messages/MessagesModel";
 import Connections from "../models/connections/connectionModel";
 import User from "../models/user/userModel";
+import { s3Upload } from "../utils/cloudStorage/S3Bucket";
 
 // @desc    Adda new conversation
 // @route   get /chat/add-conversation
@@ -110,7 +111,7 @@ export const addMessageController = asyncHandler(
 
     console.log(req.file);
     if (req.file) {
-      let type;
+      let type:string;
       if (req.file.mimetype.startsWith("image/")) {
         type = "image";
       } else if (req.file.mimetype.startsWith("video/")) {
@@ -120,15 +121,16 @@ export const addMessageController = asyncHandler(
       } else {
         type = "file";
       }
+      const fileUrl = s3Upload(req.file);
+      console.log(fileUrl)
       attachment = {
         type: type,
-        url: req.file.path,
-        filename: req.file.filename,
+        url: fileUrl,
+        filename: fileUrl,
         size: req.file.size,
       };
       content = req.body.messageType;
     }
-
     const newMessage = new Message({
       conversationId,
       sender,

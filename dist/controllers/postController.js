@@ -56,12 +56,18 @@ exports.addPostController = (0, express_async_handler_1.default)((req, res) => _
 // @route   post /post/get-post
 // @access  Public
 exports.getPostController = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId, searchTerm } = req.body;
+    const { userId, searchTerm, page } = req.body;
     console.log(userId + "postsUser");
     const connections = yield connectionModel_1.default.findOne({ userId }, { following: 1 });
     const followingUsers = connections === null || connections === void 0 ? void 0 : connections.following;
     const usersQuery = searchTerm
-        ? { $or: [{ isPrivate: false }, { _id: { $in: followingUsers } }, { userName: { $regex: searchTerm, $options: "i" } }] }
+        ? {
+            $or: [
+                { isPrivate: false },
+                { _id: { $in: followingUsers } },
+                { userName: { $regex: searchTerm, $options: "i" } },
+            ],
+        }
         : { $or: [{ isPrivate: false }, { _id: { $in: followingUsers } }] };
     const users = yield userModel_1.default.find(usersQuery);
     const userIds = users.map((user) => user._id);
@@ -71,13 +77,17 @@ exports.getPostController = (0, express_async_handler_1.default)((req, res) => _
         isDeleted: false,
     };
     if (searchTerm) {
-        const regexArray = searchTerm.split(' ').map((tag) => new RegExp(tag, 'i'));
-        postsQuery['$or'] = [
+        const regexArray = searchTerm
+            .split(" ")
+            .map((tag) => new RegExp(tag, "i"));
+        postsQuery["$or"] = [
             { title: { $regex: searchTerm, $options: "i" } },
             { description: { $regex: searchTerm, $options: "i" } },
-            { hashtags: { $in: regexArray } }
+            { hashtags: { $in: regexArray } },
         ];
     }
+    const skip = (page - 1) * 5;
+    const limit = page * 5;
     const posts = yield postModel_1.default.find(postsQuery)
         .populate({
         path: "userId",
@@ -87,7 +97,9 @@ exports.getPostController = (0, express_async_handler_1.default)((req, res) => _
         path: "likes",
         select: "userName profileImg isVerified",
     })
-        .sort({ date: -1 });
+        .sort({ date: -1 })
+        .skip(skip)
+        .limit(limit);
     res.status(200).json(posts);
 }));
 // @desc    Get User Posts
