@@ -18,6 +18,7 @@ const ConversationsModel_1 = __importDefault(require("../models/Conversations/Co
 const MessagesModel_1 = __importDefault(require("../models/Messages/MessagesModel"));
 const connectionModel_1 = __importDefault(require("../models/connections/connectionModel"));
 const userModel_1 = __importDefault(require("../models/user/userModel"));
+const S3Bucket_1 = require("../utils/cloudStorage/S3Bucket");
 // @desc    Adda new conversation
 // @route   get /chat/add-conversation
 // @access  Public
@@ -113,10 +114,12 @@ exports.addMessageController = (0, express_async_handler_1.default)((req, res) =
         else {
             type = "file";
         }
+        const fileUrl = (0, S3Bucket_1.s3Upload)(req.file);
+        console.log(fileUrl);
         attachment = {
             type: type,
-            url: req.file.path,
-            filename: req.file.filename,
+            url: fileUrl,
+            filename: fileUrl,
             size: req.file.size,
         };
         content = req.body.messageType;

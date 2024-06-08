@@ -56,7 +56,7 @@ exports.addPostController = (0, express_async_handler_1.default)((req, res) => _
 // @route   post /post/get-post
 // @access  Public
 exports.getPostController = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId, searchTerm } = req.body;
+    const { userId, searchTerm, page } = req.body;
     console.log(userId + "postsUser");
     const connections = yield connectionModel_1.default.findOne({ userId }, { following: 1 });
     const followingUsers = connections === null || connections === void 0 ? void 0 : connections.following;
@@ -78,6 +78,8 @@ exports.getPostController = (0, express_async_handler_1.default)((req, res) => _
             { hashtags: { $in: regexArray } }
         ];
     }
+    const skip = (page - 1) * 5;
+    const limit = page * 5;
     const posts = yield postModel_1.default.find(postsQuery)
         .populate({
         path: "userId",
@@ -87,6 +89,8 @@ exports.getPostController = (0, express_async_handler_1.default)((req, res) => _
         path: "likes",
         select: "userName profileImg isVerified",
     })
+        .skip(skip)
+        .limit(limit)
         .sort({ date: -1 });
     res.status(200).json(posts);
 }));

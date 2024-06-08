@@ -17,7 +17,7 @@ const sendVerifyMail = async (req: Request, name: string, email: string) => {
       },
       auth: {
         user: "neganishere73@gmail.com",
-        pass: "rrhm xbbp yrnh cras",
+        pass: "jtgw kyzh czzo efeb",
       },
     })
 
