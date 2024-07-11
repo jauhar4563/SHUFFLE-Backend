@@ -32,5 +32,7 @@ export const s3Upload = async (file: any) => {
 
     const url = `https://${bucketName}.s3.${region}.amazonaws.com/${file.originalname}`;
 
+    console.log(url,'In s3 bucket')
+
     return url;
 };

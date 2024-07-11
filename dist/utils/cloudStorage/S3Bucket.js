@@ -56,6 +56,7 @@ const s3Upload = (file) => __awaiter(void 0, void 0, void 0, function* () {
     };
     yield s3Client.send(new client_s3_1.PutObjectCommand(params));
     const url = `https://${bucketName}.s3.${region}.amazonaws.com/${file.originalname}`;
+    console.log(url, 'In s3 bucket');
     return url;
 });
 exports.s3Upload = s3Upload;
