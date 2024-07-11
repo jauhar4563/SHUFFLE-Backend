@@ -35,7 +35,8 @@ declare module "express-session" {
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    // origin: "http://localhost:5173",
+    origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   })
@@ -66,7 +67,11 @@ const port = process.env.PORT || 3000;
 const server = http.createServer(app);
 
 const io: Server = new Server(server, {
-  cors: { origin: "http://localhost:5173" },
+  cors: { 
+    // origin: "http://localhost:5173"
+    origin: "*",
+
+  },
 });
 
 // Configure Socket.IO
