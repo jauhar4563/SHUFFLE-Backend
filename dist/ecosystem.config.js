@@ -11,9 +11,17 @@ module.exports = {
         SESSION_SECRET: "SHUFFLESsession",
         DOMAIN_NAME: "https://shufle.online",
         BUCKET_NAME: "shufle.online",
+<<<<<<< HEAD
         BUCKET_REGION: "ap-south-1",
         ACCESS_KEY: "AKIARCMS32USRDBIQYUQ",
         SECRET_KEY: "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"
+=======
+        REGION: "ap-south-1",
+        AWS_ACCESS_KEY_ID: "AKIARCMS32USRDBIQYUQ",
+        AWS_SECRET_ACCESS_KEY: "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",
+        
+        // Other environment variables
+>>>>>>> origin/master
       },
       env_production: {
         NODE_ENV: "production",
@@ -23,11 +31,21 @@ module.exports = {
         SESSION_SECRET: "SHUFFLESsession",
         DOMAIN_NAME: "https://shufle.online",
         BUCKET_NAME: "shufle.online",
+<<<<<<< HEAD
         BUCKET_REGION: "ap-south-1",
         ACCESS_KEY: "AKIARCMS32USRDBIQYUQ",
         SECRET_KEY: "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"
       }
     }
   ]
+=======
+        REGION: "ap-south-1",
+        AWS_ACCESS_KEY_ID: "AKIARCMS32USRDBIQYUQ",
+        AWS_SECRET_ACCESS_KEY: "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",
+        // Other environment variables specific to production
+      },
+    },
+  ],
+>>>>>>> origin/master
 };
 

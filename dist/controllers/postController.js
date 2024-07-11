@@ -86,8 +86,13 @@ exports.getPostController = (0, express_async_handler_1.default)((req, res) => _
             { hashtags: { $in: regexArray } },
         ];
     }
+<<<<<<< HEAD
     const skip = (page - 1) * 5;
     const limit = page * 5;
+=======
+    const limit = 5;
+    const skip = (page - 1) * limit;
+>>>>>>> origin/master
     const posts = yield postModel_1.default.find(postsQuery)
         .populate({
         path: "userId",
@@ -97,9 +102,15 @@ exports.getPostController = (0, express_async_handler_1.default)((req, res) => _
         path: "likes",
         select: "userName profileImg isVerified",
     })
+<<<<<<< HEAD
         .sort({ date: -1 })
         .skip(skip)
         .limit(limit);
+=======
+        .skip(skip)
+        .limit(limit)
+        .sort({ date: -1 });
+>>>>>>> origin/master
     res.status(200).json(posts);
 }));
 // @desc    Get User Posts

@@ -58,6 +58,7 @@ export const addPostController = asyncHandler(
 // @route   post /post/get-post
 // @access  Public
 
+<<<<<<< HEAD
 export const getPostController = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId, searchTerm, page } = req.body;
@@ -118,8 +119,62 @@ export const getPostController = asyncHandler(
       .limit(limit);
 
     res.status(200).json(posts);
+=======
+export const getPostController = asyncHandler(async (req: Request, res: Response) => {
+  const { userId, searchTerm, page } = req.body;
+  console.log(userId + "postsUser");
+  
+  const connections = await Connections.findOne({ userId }, { following: 1 });
+  const followingUsers = connections?.following;
+  
+  const usersQuery = searchTerm
+    ? { $or: [{ isPrivate: false }, { _id: { $in: followingUsers } }, { userName: { $regex: searchTerm, $options: "i" } }] }
+    : { $or: [{ isPrivate: false }, { _id: { $in: followingUsers } }] };
+  const users = await User.find(usersQuery);
+  const userIds = users.map((user) => user._id);
+
+  interface PostsQuery {
+    userId: { $in: string[] };
+    isBlocked: boolean;
+    isDeleted: boolean;
+    $or?: { [key: string]: any }[];
+>>>>>>> origin/master
   }
-);
+
+  const postsQuery: PostsQuery = {
+    userId: { $in: [...userIds, userId] },
+    isBlocked: false,
+    isDeleted: false,
+  };
+
+  if (searchTerm) {
+    const regexArray = searchTerm.split(' ').map((tag:string) => new RegExp(tag, 'i'));
+    postsQuery['$or'] = [
+      { title: { $regex: searchTerm, $options: "i" } },
+      {description:{$regex: searchTerm, $options: "i" }},
+      { hashtags:  { $in: regexArray }  }
+    ];
+  }
+
+  const limit = 5;
+  const skip = (page - 1) * limit;
+
+  const posts = await Post.find(postsQuery)
+    .populate({
+      path: "userId",
+      select: "userName profileImg isVerified",
+    })
+    .populate({
+      path: "likes",
+      select: "userName profileImg isVerified",
+    })
+    .skip(skip)
+    .limit(limit)
+    .sort({ date: -1 });
+
+  res.status(200).json(posts);
+});
+
 
 // @desc    Get User Posts
 // @route   get /post/get-post

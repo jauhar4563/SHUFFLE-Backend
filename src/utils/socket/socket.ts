@@ -1,3 +1,11 @@
+import * as dotenv from "dotenv";
+
+dotenv.config();
+
+
+const bucketName = process.env.BUCKET_NAME;
+const region = process.env.REGION;
+
 const socketIo_Config = (io: any) => {
   let users: { userId: string; socketId: string }[] = [];
 
@@ -22,12 +30,13 @@ const socketIo_Config = (io: any) => {
     };
 
     //when connect
-    socket.on("addUser", (userId: string) => {
+    socket.on("addUser", (userId) => {
+      console.log("Received addUser event:", userId);
       addUser(userId, socket.id);
-      console.log(users);
-      
+      console.log("Current users:", users); // Check if the user is added
       io.emit("getUsers", users);
     });
+    
 
     // send and get message
     socket.on(
@@ -51,7 +60,7 @@ const socketIo_Config = (io: any) => {
           senderId,
           text,
           messageType,
-          file
+          file:`https://${bucketName}.s3.${region}.amazonaws.com/${file}`
         });
       }
     );
