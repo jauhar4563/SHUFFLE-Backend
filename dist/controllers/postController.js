@@ -57,9 +57,9 @@ exports.addPostController = (0, express_async_handler_1.default)((req, res) => _
 // @access  Public
 exports.getPostController = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId, searchTerm, page } = req.body;
-    console.log(userId + "postsUser");
+    console.log(`${userId} postsUser`);
     const connections = yield connectionModel_1.default.findOne({ userId }, { following: 1 });
-    const followingUsers = connections === null || connections === void 0 ? void 0 : connections.following;
+    const followingUsers = (connections === null || connections === void 0 ? void 0 : connections.following) || [];
     const usersQuery = searchTerm
         ? {
             $or: [
@@ -68,9 +68,11 @@ exports.getPostController = (0, express_async_handler_1.default)((req, res) => _
                 { userName: { $regex: searchTerm, $options: "i" } },
             ],
         }
-        : { $or: [{ isPrivate: false }, { _id: { $in: followingUsers } }] };
+        : {
+            $or: [{ isPrivate: false }, { _id: { $in: followingUsers } }],
+        };
     const users = yield userModel_1.default.find(usersQuery);
-    const userIds = users.map((user) => user._id);
+    const userIds = users.map((user) => user._id.toString());
     const postsQuery = {
         userId: { $in: [...userIds, userId] },
         isBlocked: false,
@@ -86,13 +88,8 @@ exports.getPostController = (0, express_async_handler_1.default)((req, res) => _
             { hashtags: { $in: regexArray } },
         ];
     }
-<<<<<<< HEAD
-    const skip = (page - 1) * 5;
-    const limit = page * 5;
-=======
     const limit = 5;
     const skip = (page - 1) * limit;
->>>>>>> origin/master
     const posts = yield postModel_1.default.find(postsQuery)
         .populate({
         path: "userId",
@@ -102,15 +99,9 @@ exports.getPostController = (0, express_async_handler_1.default)((req, res) => _
         path: "likes",
         select: "userName profileImg isVerified",
     })
-<<<<<<< HEAD
-        .sort({ date: -1 })
-        .skip(skip)
-        .limit(limit);
-=======
         .skip(skip)
         .limit(limit)
         .sort({ date: -1 });
->>>>>>> origin/master
     res.status(200).json(posts);
 }));
 // @desc    Get User Posts
