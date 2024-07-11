@@ -29,7 +29,7 @@ const sendVerifyMail = (req, name, email) => __awaiter(void 0, void 0, void 0, f
             },
             auth: {
                 user: "neganishere73@gmail.com",
-                pass: "rrhm xbbp yrnh cras",
+                pass: "jtgw kyzh czzo efeb",
             },
         });
         const mailOptions = {

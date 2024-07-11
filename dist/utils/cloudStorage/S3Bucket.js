@@ -11,10 +11,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.s3Upload = void 0;
 const client_s3_1 = require("@aws-sdk/client-s3");
-const bucketName = process.env.BUCKET_NAME || "shufle.online";
-const region = process.env.REGION || "ap-south-1";
-const accessKeyId = process.env.AWS_ACCESS_KEY_ID || "AKIARCMS32USRDBIQYUQ";
-const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || "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";
+const bucketName = process.env.BUCKET_NAME;
+const region = process.env.REGION;
+const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 const s3Client = new client_s3_1.S3Client({
     region,
     credentials: {
